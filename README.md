@@ -11,10 +11,10 @@
 ## Hızlı Başlangıç
 
 ### Backend
+Komutları depo kök dizininden çalıştırın:
 ```bash
-cd backend
-pip install -r requirements.txt
-uvicorn main:app --reload
+pip install -r backend/requirements.txt
+uvicorn backend.main:app --reload
 ```
 
 ### Frontend
