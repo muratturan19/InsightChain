@@ -3,10 +3,11 @@
 Bu dizin FastAPI tabanlı REST servislerini içerir. Her bir ajan ve workflow modüler olarak `agents/`, `tools/` ve `workflows/` klasörlerinde yer alır.
 
 ## Çalıştırma
-
+Komutları depo kök dizininden çalıştırın:
 ```bash
 pip install -r requirements.txt
-uvicorn main:app --reload
+cd ..
+uvicorn backend.main:app --reload
 ```
 
 `requirements.txt` scraping aracı için Playwright, Selenium ve Scrapy gibi ek kütühaneler içerir. Playwright kullanılacaksa `playwright install` komutu ile tarayıcıları kurmayı unutmayın.
