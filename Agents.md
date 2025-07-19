@@ -8,8 +8,8 @@ Ajanlar, platformun çekirdek işlevlerini modüler şekilde üstlenir. Her ajan
 - **Örnek Kullanım:** `run_search(["open source ai"])`
 
 ## 2. Scraper Agent
-- **Görev:** Web sitesinden/company page’den veri çıkarma (title, ürünler, iletişim, about, vs)
-- **Kullandığı Tool’lar:** WebScraperTool, Requests, BeautifulSoup/Playwright
+- **Görev:** Web sitesinden/company page’den veri çıkarma (title, ürünler, iletişim, about, vs). GPT-4 kullanarak uygun scraping aracını seçer ve gerçek scraping işlemini tetikler.
+- **Kullandığı Tool’lar:** staticscraper, jsrender, formbot, masscrawler, llmscraper
 
 ## 3. Enrichment Agent
 - **Görev:** Firma LinkedIn, sosyal medya, ekstra email, telefon, karar verici isimleri bulma

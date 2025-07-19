@@ -3,3 +3,9 @@ uvicorn
 langchain
 requests
 python-dotenv
+openai
+beautifulsoup4
+playwright
+selenium
+scrapy
+# scraperai (varsa pip ile eklenir)
