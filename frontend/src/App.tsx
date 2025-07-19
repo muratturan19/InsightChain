@@ -1,13 +1,31 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import Header from './components/Header';
+import Sidebar from './components/Sidebar';
+import MainCard from './components/MainCard';
 
 export default function App() {
+  const [dark, setDark] = useState(false);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    if (dark) {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
+  }, [dark]);
+
   return (
-    <div className="min-h-screen grid grid-cols-12">
-      <aside className="col-span-2 bg-slate-900 text-white p-4">Sidebar</aside>
-      <main className="col-span-10 p-4">
-        <header className="mb-4 text-2xl font-bold text-corporate">InsightChain</header>
-        <section className="bg-white p-4 rounded shadow">Sonuçlar burada</section>
-      </main>
+    <div className="flex flex-col min-h-screen">
+      <Header onToggleDark={() => setDark((v) => !v)} />
+      <div className="flex flex-1">
+        <Sidebar />
+        <main className="flex-1 flex items-start justify-center p-4">
+          <div className="w-full max-w-4xl">
+            <MainCard />
+          </div>
+        </main>
+      </div>
     </div>
   );
 }
