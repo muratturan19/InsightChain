@@ -1,6 +1,6 @@
 """Örnek orchestrator workflow."""
 
-from . import agents
+from .. import agents
 
 
 def run(keyword: str) -> dict:
