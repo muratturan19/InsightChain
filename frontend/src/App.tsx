@@ -17,11 +17,11 @@ export default function App() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <Header onToggleDark={() => setDark((v) => !v)} />
+      <Header onToggleDark={() => setDark((v) => !v)} dark={dark} />
       <div className="flex flex-1">
         <Sidebar />
-        <main className="flex-1 flex items-start justify-center p-4">
-          <div className="w-full max-w-4xl">
+        <main className="flex-1 flex items-start justify-center p-6">
+          <div className="w-full max-w-5xl">
             <MainCard />
           </div>
         </main>
