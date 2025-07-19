@@ -6,3 +6,4 @@ from .scraping_tools import (
     masscrawler,
     llmscraper,
 )
+from .linkedin_finder import linkedinfinder, linkedincontacts

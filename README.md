@@ -25,3 +25,6 @@ npm run dev
 ```
 
 Gerekli API anahtarlarını `backend/.env.example` dosyasını kopyalayıp `.env` adında oluşturmayı unutmayın.
+
+LinkedIn şirket sayfasını bulmak için backend'deki `/find_linkedin` endpoint'ini
+kullanabilirsiniz.
