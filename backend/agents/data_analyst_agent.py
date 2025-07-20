@@ -5,6 +5,8 @@ from typing import Dict
 
 import openai
 
+client = openai.OpenAI()
+
 from ..tools import brave_news
 
 
@@ -35,9 +37,9 @@ def analyze_data(
         news_data = {"news": []}
 
     prompt = make_prompt(scrape_data, linkedin_data, news_data)
-    response = openai.ChatCompletion.create(
+    response = client.chat.completions.create(
         model="gpt-4",
         messages=[{"role": "user", "content": prompt}],
     )
-    summary = response.choices[0].message["content"]
+    summary = response.choices[0].message.content
     return {"summary": summary, "news": news_data.get("news", [])}

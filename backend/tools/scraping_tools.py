@@ -19,6 +19,9 @@ from scrapy import Spider
 # OpenAI for llmscraper
 import openai
 
+# create a client instance using environment variables for configuration
+client = openai.OpenAI()
+
 
 def staticscraper(target_url: str) -> Dict[str, str]:
     """Scrape static HTML content using requests and BeautifulSoup."""
@@ -82,9 +85,9 @@ def llmscraper(target_url: str) -> Dict[str, str]:
         f"Content:\n{html[:4000]}\n"  # limit to first 4000 chars
         "Provide a short summary."
     )
-    response = openai.ChatCompletion.create(
+    response = client.chat.completions.create(
         model="gpt-4", messages=[{"role": "user", "content": prompt}]
     )
-    summary = response.choices[0].message["content"]
+    summary = response.choices[0].message.content
     return {"summary": summary, "html": html}
 

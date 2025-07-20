@@ -5,6 +5,8 @@ from typing import Dict
 
 import openai
 
+client = openai.OpenAI()
+
 from ..tools import scraping_tools
 
 
@@ -34,12 +36,12 @@ def make_prompt(company_url: str) -> str:
 
 def call_gpt4(prompt: str) -> Dict[str, str]:
     """Call the OpenAI API and return the parsed JSON."""
-    response = openai.ChatCompletion.create(
+    response = client.chat.completions.create(
         model="gpt-4",
         messages=[{"role": "user", "content": prompt}],
         temperature=0,
     )
-    content = response.choices[0].message["content"]
+    content = response.choices[0].message.content
     return json.loads(content)
 
 
