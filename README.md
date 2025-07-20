@@ -30,3 +30,13 @@ LinkedIn şirket sayfasını bulmak için backend'deki `/find_linkedin` endpoint
 kullanabilirsiniz.
 Tam entegre analiz için `/analyze` endpoint'ine şirket web sitesini POST edin.
 Reporter Agent'ın tool destekli çalışmasını görmek için `backend/examples/reporter_usage.py` dosyasını çalıştırabilirsiniz.
+
+## Testler
+Python testlerini calistirmak icin asagidaki komutu kullanin:
+```bash
+pytest
+```
+Testler en azindan `OPENAI_API_KEY` ortam degiskeni tanimli iken calismalidir.
+```bash
+export OPENAI_API_KEY=test
+```
