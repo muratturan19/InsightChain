@@ -42,6 +42,9 @@ def run_pipeline(
                 for field in [
                     "foundation",
                     "production_capacity",
+                    "production_technology",
+                    "machinery",
+                    "services",
                     "r_and_d",
                     "references",
                     "decision_makers",

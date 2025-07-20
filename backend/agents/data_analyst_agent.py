@@ -31,13 +31,18 @@ def make_prompt(
         "\n"
         "Your job: Synthesize all this data into a concise, practical, and actionable summary for a sales team. "
         "Focus on insights that would help a sales rep decide how, why, and to whom to reach out. "
-        "Highlight decision-makers, sales opportunities, recent developments, and anything that could impact a sales pitch.\n"
+        "Highlight decision-makers, sales opportunities, recent developments, and anything that could impact a sales pitch. "
+        "Include information on production technology, machinery used, services offered, and R&D activities whenever available.\n"
         "\n"
         "Output only valid JSON using this format:\n"
         "{\n"
         '  "company_summary": "",\n'
         '  "sector": "",\n'
         '  "products_services": "",\n'
+        '  "production_technology": "",\n'
+        '  "machinery": "",\n'
+        '  "services": "",\n'
+        '  "r_and_d": "",\n'
         '  "decision_makers": [\n'
         '    {"full_name": "", "title": "", "summary": ""}\n'
         "  ],\n"

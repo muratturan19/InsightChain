@@ -6,7 +6,10 @@ from .search_agent import run_search
 QUERY_MAP = {
     "foundation": ["foundation year", "established"],
     "production_capacity": ["production capacity"],
-    "r_and_d": ["R&D investment", "research and development"],
+    "production_technology": ["production technology", "manufacturing technology"],
+    "machinery": ["machinery", "equipment"],
+    "services": ["services", "service offerings"],
+    "r_and_d": ["R&D investment", "research and development", "innovation"],
     "references": ["customer references", "case studies"],
     "decision_makers": ["leadership team", "executives"],
     "growth_signals": ["growth signals", "investment", "expansion", "hiring"],
