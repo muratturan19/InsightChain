@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import ConnectionPopup from './ConnectionPopup';
 
 export default function MainCard() {
   const [query, setQuery] = useState('');
@@ -6,23 +7,28 @@ export default function MainCard() {
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState('');
   const [result, setResult] = useState('');
+  const [showPopup, setShowPopup] = useState(false);
+
+  const checkInternet = async () => {
+    try {
+      const ping = await fetch('/check_internet');
+      const pingRes = await ping.json();
+      return Boolean(pingRes.ok);
+    } catch {
+      return false;
+    }
+  };
 
   const handleSearch = async () => {
     if (!query) return;
     setLoading(true);
     setResult('');
     setStatus('İnternet bağlantısı kontrol ediliyor...');
-    try {
-      const ping = await fetch('/check_internet');
-      const pingRes = await ping.json();
-      if (!pingRes.ok) {
-        setStatus(pingRes.error);
-        setLoading(false);
-        return;
-      }
-    } catch (err) {
-      setStatus('İNTERNET BAĞLANTISI KURULAMADI. Lütfen bağlantınızı kontrol edin ve 443 portuna erişimin açık olduğuna emin olun');
+    const ok = await checkInternet();
+    if (!ok) {
       setLoading(false);
+      setStatus('');
+      setShowPopup(true);
       return;
     }
     setStatus('Web sitesi inceleniyor...');
@@ -49,7 +55,13 @@ export default function MainCard() {
   };
 
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl p-8 space-y-8">
+    <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl p-8 space-y-8 relative">
+      {showPopup && (
+        <ConnectionPopup
+          onRetry={checkInternet}
+          onClose={() => setShowPopup(false)}
+        />
+      )}
       <div className="grid gap-8 md:grid-cols-2">
         <div className="space-y-4">
           <label htmlFor="query" className="block text-slate-800 dark:text-slate-200 font-semibold">
