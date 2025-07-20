@@ -91,7 +91,11 @@ def extract_company_info(html: str) -> Dict[str, str]:
         "- If possible, identify the primary industry/sector and notable products, services, or technologies.\n"
         "- Note any signals that might help a sales team (e.g. recent news, growth, awards, leadership changes, market focus, new locations, partnerships, etc.)\n\n"
         "Be brief, practical and directly useful for sales preparation. If any information is missing, just leave the field blank—do not hallucinate or make up facts.\n\n"
-        f"HTML:\n{html[:4000]}\n\n"
+        # Send a larger chunk of the crawled HTML to the LLM so more context is
+        # available when extracting company information.
+        # 20k characters keeps the prompt size reasonable while covering most
+        # landing pages.
+        f"HTML:\n{html[:20000]}\n\n"
         "Respond in JSON with these keys:\n"
         "{\n"
         '  "company_name": "",\n'
