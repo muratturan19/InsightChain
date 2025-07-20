@@ -35,14 +35,30 @@ def make_prompt(company_url: str) -> str:
 
 
 def call_gpt4(prompt: str) -> Dict[str, str]:
-    """Call the OpenAI API and return the parsed JSON."""
+    """Call the OpenAI API and return the parsed JSON.
+
+    The GPT-4 model occasionally returns the JSON response wrapped in text
+    or fails to strictly follow the format. To make the agent more robust we
+    try to extract the JSON payload and raise a clear error if parsing fails.
+    """
     response = client.chat.completions.create(
         model="gpt-4",
         messages=[{"role": "user", "content": prompt}],
         temperature=0,
     )
-    content = response.choices[0].message.content
-    return json.loads(content)
+    content = response.choices[0].message.content or ""
+    try:
+        return json.loads(content)
+    except json.JSONDecodeError:
+        import re
+
+        match = re.search(r"{.*}", content, re.DOTALL)
+        if match:
+            try:
+                return json.loads(match.group(0))
+            except json.JSONDecodeError:
+                pass
+        raise ValueError(f"Invalid JSON from GPT-4: {content}")
 
 
 def orchestrate_scraping(company_url: str) -> Dict[str, str]:
