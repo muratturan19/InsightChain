@@ -35,7 +35,7 @@ scrapy_module.Spider = object
 sys.modules.setdefault("scrapy", scrapy_module)
 sys.modules.setdefault("scrapy.crawler", crawler_module)
 
-from backend.agents.scraper_agent import crawl_site
+from backend.agents.scraper_agent import crawl_site, orchestrate_scraping
 
 
 class CrawlSiteTests(unittest.TestCase):
@@ -91,6 +91,55 @@ class CrawlSiteTests(unittest.TestCase):
         self.assertIn(html_a, result)
         self.assertNotIn(html_b, result)
         self.assertEqual(mock_get.call_count, 2)
+
+
+class OrchestrateScrapingTests(unittest.TestCase):
+    @patch("backend.agents.scraper_agent.extract_company_info", return_value={})
+    @patch("backend.agents.scraper_agent.crawl_site", return_value="<html>extra</html>")
+    @patch("backend.agents.scraper_agent.scraping_tools.llmscraper", return_value={"html": ""})
+    @patch("backend.agents.scraper_agent.scraping_tools.masscrawler", return_value={"html": ""})
+    @patch("backend.agents.scraper_agent.scraping_tools.formbot", return_value={"html": ""})
+    @patch("backend.agents.scraper_agent.scraping_tools.jsrender", return_value={"html": ""})
+    @patch("backend.agents.scraper_agent.scraping_tools.staticscraper")
+    def test_depth_invokes_crawler(
+        self,
+        mock_static,
+        mock_js,
+        mock_formbot,
+        mock_mass,
+        mock_llm,
+        mock_crawl,
+        mock_extract,
+    ):
+        mock_static.return_value = {"html": "<html>main</html>"}
+
+        result = orchestrate_scraping("http://example.com", depth_limit=1)
+
+        mock_crawl.assert_called_once_with("http://example.com", 1)
+        self.assertIn("extra", result["html"])
+
+    @patch("backend.agents.scraper_agent.extract_company_info", return_value={})
+    @patch("backend.agents.scraper_agent.crawl_site")
+    @patch("backend.agents.scraper_agent.scraping_tools.llmscraper", return_value={"html": ""})
+    @patch("backend.agents.scraper_agent.scraping_tools.masscrawler", return_value={"html": ""})
+    @patch("backend.agents.scraper_agent.scraping_tools.formbot", return_value={"html": ""})
+    @patch("backend.agents.scraper_agent.scraping_tools.jsrender", return_value={"html": ""})
+    @patch("backend.agents.scraper_agent.scraping_tools.staticscraper")
+    def test_depth_zero_skips_crawler(
+        self,
+        mock_static,
+        mock_js,
+        mock_formbot,
+        mock_mass,
+        mock_llm,
+        mock_crawl,
+        mock_extract,
+    ):
+        mock_static.return_value = {"html": "<html>main</html>"}
+
+        orchestrate_scraping("http://example.com", depth_limit=0)
+
+        mock_crawl.assert_not_called()
 
 
 if __name__ == "__main__":

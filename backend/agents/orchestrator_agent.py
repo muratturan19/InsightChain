@@ -13,14 +13,17 @@ from ..utils.logger import logger
 
 
 def run_pipeline(
-    company_url: str, company_name: Optional[str] = None
+    company_url: str,
+    company_name: Optional[str] = None,
+    depth: int = 1,
 ) -> Dict[str, object]:
     """Run scraping, LinkedIn enrichment and final analysis."""
     step = "Pipeline"
     logger.info("%s START: %s %s", step, company_url, company_name)
     start = time.perf_counter()
+    depth = max(1, depth)
     try:
-        scrape_result = orchestrate_scraping(company_url)
+        scrape_result = orchestrate_scraping(company_url, depth)
         if not company_name:
             company_name = scrape_result.get("company_name", company_url)
         linkedin_result = orchestrate_linkedin(company_name, contacts=True)
