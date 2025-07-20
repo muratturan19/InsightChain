@@ -41,22 +41,26 @@ client = openai.OpenAI()
 STYLE_SNIPPET = """
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Open+Sans:wght@400&display=swap');
-body{font-family:'Open Sans',sans-serif;background:#F5F6FA;color:#003366;margin:0;padding:20px;}
-h1,h2,h3{font-family:'Montserrat',sans-serif;font-weight:700;}
-.container{max-width:800px;margin:auto;}
-.card{background:#FFFFFF;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.1);padding:20px;margin-bottom:20px;}
-.card h2{color:#2C85C8;font-size:24px;margin-top:0;display:flex;align-items:center;}
-.alert{background:#ffe6e6;border-left:6px solid #ff0000;padding:15px;border-radius:8px;}
-.actions li{margin-bottom:8px;}
-.actions li::before{content:'💡';margin-right:6px;}
-footer{text-align:center;margin-top:20px;color:#003366;font-size:14px;}
+body{font-family:'Open Sans',sans-serif;background:#F5F6FA;color:#003366;margin:0;padding:40px 0;}
+.container{max-width:850px;margin:auto;background:#fff;padding:40px 60px;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,0.06);}
+h1,h2,h3{font-family:'Montserrat',sans-serif;font-weight:700;margin-top:0;color:#003366;}
+h1{font-size:32px;margin-bottom:20px;}
+h2{font-size:26px;margin-bottom:12px;}
+section{margin-bottom:40px;}
+section+section{border-top:1px solid #E5E8EC;padding-top:30px;}
+p,li{font-size:17px;line-height:1.7;}
+.subtitle{color:#2C85C8;font-weight:700;}
+.alert{background:#FFE6E6;border-left:6px solid #ff0000;padding:15px;}
+.actions li{font-weight:bold;margin-bottom:8px;}
+.actions li::before{content:'💡 ';}
+footer{text-align:center;font-size:14px;color:#003366;position:fixed;bottom:0;left:0;width:100%;background:#fff;padding:8px 0;box-shadow:0 -1px 3px rgba(0,0,0,0.1);}
 </style>
 """
 
 
 REPORT_PROMPT = """
 You are an advanced sales analyst (LLM4) working for Delta Proje.
-Create a modern, card-based HTML report using only the provided JSON analysis.
+Create a modern consulting-style HTML report using only the provided JSON analysis.
 If any field is missing, explicitly note 'Bilgi yok' and never invent facts.
 As Reporter Agent, you may use serpapi, BraveAPI and Google Custom Search tools
 to gather up-to-date company news, milestones or decision maker changes. Chain
@@ -64,11 +68,13 @@ them logically when necessary and always cite the source with a short
 reliability note. Do not hallucinate. If no information is found, explicitly say
 so.
 
-Visual design must follow Delta Proje guidelines: Montserrat headings, Open Sans text,
-primary colors #003366 and #2C85C8 with accent #F8B400. Each section should be a rounded
-card with spacing and box-shadow. Use simple emoji or FontAwesome icons. Risks appear in
-a red alert box and actionable items start with a 💡 emoji. Conclude with a footer
-stating "Bu rapor Delta Proje Akıllı Satış Asistanı tarafından hazırlanmıştır.".
+Visual design should mimic a professional business document. Use Montserrat for headings
+and Open Sans for body text. The report lives inside a wide container (max 850px) with a
+subtle shadow and rounded corners. Section titles are left aligned, bold and large, body
+text is 17px with 1.7 line spacing. Separate sections with light gray lines (#E5E8EC) and
+ample spacing. Begin with an Executive Summary section. Risks appear in a full-width light
+red box with a left red border, and actionable items start with a 💡 bullet. Conclude with a
+footer stating "Bu rapor Delta Proje Akıllı Satış Asistanı tarafından hazırlanmıştır.".
 
 Content to include:
 - Şirket Özeti, sektör, büyüklük ve lokasyon
