@@ -23,6 +23,11 @@ Ajanlar, platformun çekirdek işlevlerini modüler şekilde üstlenir. Her ajan
 - **Görev:** Tüm agent’ları zincir halinde sırayla tetiklemek, veri akışını yönetmek, hata yönetimi
 - **Kullandığı Tool’lar:** LangChain workflow, event dispatcher
 
+## 6. Reporter Agent
+- **Görev:** Analiz JSON'unu modern kart tabanlı HTML rapora dönüştürmek
+- **Kullandığı Tool'lar:** newsfinder, linkedin_search, trend_fetcher, product_catalogue, web_search
+
 ---
 
 Bu dosya, projenin ilerlemesiyle sürekli güncellenecek. Her yeni agent ve workflow burada tarif edilecek.
+

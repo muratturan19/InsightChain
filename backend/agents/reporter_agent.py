@@ -3,21 +3,29 @@
 from __future__ import annotations
 
 import json
-from typing import Dict, Any
+from typing import Any, Dict
 
 import openai
 
 from ..utils.logger import logger
+from ..tools import (
+    linkedin_search,
+    newsfinder,
+    trend_fetcher,
+    product_catalogue,
+    web_search,
+)
 
 client = openai.OpenAI()
 
-# Basic CSS snippet to keep visual style consistent across reports
+# Basic CSS snippet for Delta Proje sales reports
 STYLE_SNIPPET = """
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Open+Sans:wght@400&display=swap');
 body{font-family:'Open Sans',sans-serif;background:#F5F6FA;color:#003366;margin:0;padding:20px;}
 h1,h2,h3{font-family:'Montserrat',sans-serif;font-weight:700;}
-.card{background:#FFFFFF;border-radius:10px;box-shadow:0 2px 6px rgba(0,0,0,0.1);padding:20px;margin-bottom:20px;}
+.container{max-width:800px;margin:auto;}
+.card{background:#FFFFFF;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.1);padding:20px;margin-bottom:20px;}
 .card h2{color:#2C85C8;font-size:24px;margin-top:0;display:flex;align-items:center;}
 .alert{background:#ffe6e6;border-left:6px solid #ff0000;padding:15px;border-radius:8px;}
 .actions li{margin-bottom:8px;}
@@ -28,35 +36,26 @@ footer{text-align:center;margin-top:20px;color:#003366;font-size:14px;}
 
 
 REPORT_PROMPT = """
-You are an expert sales analyst for Delta Proje. Generate a polished HTML report based
-strictly on the provided analysis JSON. Never fabricate data: if something is missing,
-clearly note "Bilgi yok". The report must be fully in Turkish.
+You are an advanced sales analyst (LLM4) working for Delta Proje.
+Create a modern, card-based HTML report using only the provided JSON analysis.
+If any field is missing, explicitly note 'Bilgi yok' and never invent facts.
 
-Visual design requirements:
-- Use Google fonts Montserrat (bold, 24px) for headings and Open Sans (16px) for text.
-- Primary colors: koyu mavi #003366, açık mavi #2C85C8, vurgu #F8B400, açık gri #F5F6FA,
-  beyaz #FFFFFF.
-- Each section should be in a rounded "card" with subtle box-shadow and generous padding.
-- Section titles may include simple icons (emoji or FontAwesome) and the title text should
-  use the accent color.
-- The "Riskler" section must appear in a red alert-style box.
-- "Aksiyon önerileri" should be an unordered list where each item begins with a 💡 emoji.
-- Finish the document with a footer: "Bu rapor Delta Proje Akıllı Satış Asistanı tarafından hazırlanmıştır.".
-- Ensure a responsive layout that looks good on desktop and mobile.
+Visual design must follow Delta Proje guidelines: Montserrat headings, Open Sans text,
+primary colors #003366 and #2C85C8 with accent #F8B400. Each section should be a rounded
+card with spacing and box-shadow. Use simple emoji or FontAwesome icons. Risks appear in
+a red alert box and actionable items start with a 💡 emoji. Conclude with a footer
+stating "Bu rapor Delta Proje Akıllı Satış Asistanı tarafından hazırlanmıştır.".
 
-Content guidelines:
-- Company Overview: brief summary, location, sector and size.
-- Key Decision Makers: names, titles and short LinkedIn summaries.
-- Growth & Sales Signals: hiring or expansion indicators.
-- Delta Proje Sales Opportunities: suggest Hydraulic, Pneumatic, Process Automation or
-  AI solutions only if supported by input; otherwise state that no clear opportunity
-  is visible.
-- Actionable Recommendations: how to approach and what value proposition.
-- Recent News: list with links if available.
-- Riskler & Açık Noktalar: data gaps or competitive risks.
+Content to include:
+- Şirket Özeti, sektör, büyüklük ve lokasyon
+- Karar Vericiler (isim, unvan, kısa LinkedIn notu)
+- Satış/Growth Sinyalleri
+- Delta Proje Satış Fırsatları (Hydraulic, Pneumatic, Process Automation, AI)
+- Aksiyon Önerileri ve Değer Önerisi
+- Güncel Haberler (varsa linkli)
+- Riskler ve Açık Noktalar
 
-Output only the final HTML document – no explanations. Incorporate the required CSS
-inside a <style> tag so the result can be shared as a single file."""
+Return only a complete HTML document with embedded CSS; no extra commentary."""
 
 
 def make_prompt(analysis: Dict[str, Any]) -> str:
@@ -69,8 +68,13 @@ def make_prompt(analysis: Dict[str, Any]) -> str:
 
 
 
-def generate_report(analysis_json: str) -> str:
-    """Generate final HTML report from analysis JSON string."""
+def generate_report(analysis_json: str, tool_mode: bool = False) -> str:
+    """Generate final HTML report from analysis JSON string.
+
+    If ``tool_mode`` is True, the LLM can call additional tools to enrich the
+    report. The function handles the tool calling loop until the model returns
+    final HTML content.
+    """
     step = "LLM4-Reporter"
     try:
         analysis: Dict[str, Any] = json.loads(analysis_json)
@@ -81,15 +85,82 @@ def generate_report(analysis_json: str) -> str:
     prompt = make_prompt(analysis)
     logger.info("%s INPUT: %s", step, prompt)
 
+    messages = [{"role": "user", "content": prompt}]
+    tools = [
+        {
+            "type": "function",
+            "function": {
+                "name": "newsfinder",
+                "description": "Find recent news articles about a query",
+                "parameters": {"type": "object", "properties": {"query": {"type": "string"}}, "required": ["query"]},
+            },
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "linkedin_search",
+                "description": "Find the LinkedIn page for a company",
+                "parameters": {"type": "object", "properties": {"company": {"type": "string"}}, "required": ["company"]},
+            },
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "trend_fetcher",
+                "description": "Get trend data for a topic",
+                "parameters": {"type": "object", "properties": {"topic": {"type": "string"}}, "required": ["topic"]},
+            },
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "product_catalogue",
+                "description": "Retrieve Delta Proje product suggestions",
+                "parameters": {"type": "object", "properties": {"query": {"type": "string"}}, "required": ["query"]},
+            },
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "web_search",
+                "description": "General web search results",
+                "parameters": {"type": "object", "properties": {"query": {"type": "string"}}, "required": ["query"]},
+            },
+        },
+    ]
+
     try:
-        response = client.chat.completions.create(
-            model="gpt-4o",
-            messages=[{"role": "user", "content": prompt}],
-            temperature=1.2,
-        )
-        report = response.choices[0].message.content or ""
-        logger.info("%s OUTPUT: %s", step, report)
-        return report
+        while True:
+            response = client.chat.completions.create(
+                model="gpt-4o",
+                messages=messages,
+                temperature=1.2,
+                tools=tools if tool_mode else None,
+            )
+            msg = response.choices[0].message
+            if msg.content:
+                report = msg.content
+                logger.info("%s OUTPUT: %s", step, report)
+                return report
+            for call in msg.tool_calls or []:
+                try:
+                    args = json.loads(call.function.arguments or "{}")
+                except json.JSONDecodeError:
+                    args = {}
+                name = call.function.name
+                if name == "newsfinder":
+                    result = newsfinder(args.get("query", ""))
+                elif name == "linkedin_search":
+                    result = linkedin_search(args.get("company", ""))
+                elif name == "trend_fetcher":
+                    result = trend_fetcher(args.get("topic", ""))
+                elif name == "product_catalogue":
+                    result = product_catalogue(args.get("query", ""))
+                elif name == "web_search":
+                    result = web_search(args.get("query", ""))
+                else:
+                    result = {}
+                messages.append({"role": "tool", "tool_call_id": call.id, "content": json.dumps(result, ensure_ascii=False)})
     except Exception as exc:
         logger.exception("%s ERROR: %s", step, exc)
         raise

@@ -21,7 +21,7 @@ def run_pipeline(
             company_name = scrape_result.get("company_name", company_url)
         linkedin_result = orchestrate_linkedin(company_name, contacts=True)
         analysis_result = analyze_data(scrape_result, linkedin_result, company_name)
-        report_html = generate_report(analysis_result.get("summary", "{}"))
+        report_html = generate_report(analysis_result.get("summary", "{}"), tool_mode=True)
         result = {
             "scrape": scrape_result,
             "linkedin": linkedin_result,
