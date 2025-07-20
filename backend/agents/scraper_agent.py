@@ -2,6 +2,7 @@
 
 import json
 from typing import Dict, List, Set, Tuple
+import time
 
 import requests
 from bs4 import BeautifulSoup
@@ -141,6 +142,7 @@ def orchestrate_scraping(company_url: str, depth_limit: int = 0) -> Dict[str, st
     step = "ScraperAgent"
     company_url = normalize_url(company_url)
     logger.info("%s INPUT: %s", step, company_url)
+    start = time.perf_counter()
 
     tools = [
         scraping_tools.staticscraper,
@@ -170,6 +172,7 @@ def orchestrate_scraping(company_url: str, depth_limit: int = 0) -> Dict[str, st
             logger.warning("%s crawl_site failed: %s", step, exc)
 
     info = extract_company_info(html)
-    final = {"html": html, **info}
-    logger.info("%s OUTPUT: %s", step, final)
+    duration_ms = int((time.perf_counter() - start) * 1000)
+    final = {"html": html, **info, "duration_ms": duration_ms}
+    logger.info("%s OUTPUT (%d ms): %s", step, duration_ms, final)
     return final

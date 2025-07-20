@@ -18,6 +18,7 @@ def run_pipeline(
     """Run scraping, LinkedIn enrichment and final analysis."""
     step = "Pipeline"
     logger.info("%s START: %s %s", step, company_url, company_name)
+    start = time.perf_counter()
     try:
         scrape_result = orchestrate_scraping(company_url)
         if not company_name:
@@ -61,14 +62,22 @@ def run_pipeline(
             )
             retries += 1
 
-        report_html = generate_report(analysis_result.get("summary", "{}"), tool_mode=True)
+        report_result = generate_report(analysis_result.get("summary", "{}"), tool_mode=True)
+        duration_ms = int((time.perf_counter() - start) * 1000)
         result = {
             "scrape": scrape_result,
             "linkedin": linkedin_result,
             "analysis": analysis_result,
-            "report": report_html,
+            "report": report_result.get("html", ""),
+            "timings": {
+                "scrape": scrape_result.get("duration_ms"),
+                "linkedin": linkedin_result.get("duration_ms"),
+                "analysis": analysis_result.get("duration_ms"),
+                "report": report_result.get("duration_ms"),
+                "pipeline": duration_ms,
+            },
         }
-        logger.info("%s OUTPUT: %s", step, result)
+        logger.info("%s OUTPUT (%d ms): %s", step, duration_ms, result)
         return result
     except Exception as exc:
         logger.exception("%s ERROR: %s", step, exc)

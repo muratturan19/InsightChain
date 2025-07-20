@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 from typing import Any, Dict
+import time
 
 import openai
 
@@ -96,6 +97,7 @@ def generate_report(analysis_json: str, tool_mode: bool = False) -> str:
     final HTML content.
     """
     step = "LLM4-Reporter"
+    start = time.perf_counter()
     try:
         analysis: Dict[str, Any] = json.loads(analysis_json)
     except json.JSONDecodeError:
@@ -178,8 +180,9 @@ def generate_report(analysis_json: str, tool_mode: bool = False) -> str:
             messages.append(msg.model_dump())
             if msg.content:
                 report = msg.content
-                logger.info("%s OUTPUT: %s", step, report)
-                return report
+                duration_ms = int((time.perf_counter() - start) * 1000)
+                logger.info("%s OUTPUT (%d ms): %s", step, duration_ms, report)
+                return {"html": report, "duration_ms": duration_ms}
             for call in msg.tool_calls or []:
                 try:
                     args = json.loads(call.function.arguments or "{}")

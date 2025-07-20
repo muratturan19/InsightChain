@@ -4,6 +4,7 @@ Ajan asla içerik uydurmaz, sadece harici API araması sonucu veri döndürür.
 """
 
 from typing import Dict, List
+import time
 
 from ..utils.logger import logger
 from ..tools.search_tools import serpapi_search, brave_search, google_cse_search
@@ -53,6 +54,7 @@ def orchestrate_linkedin(company: str, contacts: bool = False) -> Dict[str, obje
     """Find LinkedIn info using external search engines only."""
     step = "LinkedInAgent"
     logger.info("%s INPUT: %s", step, company)
+    start = time.perf_counter()
 
     query = f"site:linkedin.com/in OR site:linkedin.com/company {company}"
     search_results = _search_all(query)
@@ -81,5 +83,7 @@ def orchestrate_linkedin(company: str, contacts: bool = False) -> Dict[str, obje
         "search_results": search_results,
         "note": note,
     }
-    logger.info("%s OUTPUT: %s", step, result)
+    duration_ms = int((time.perf_counter() - start) * 1000)
+    result["duration_ms"] = duration_ms
+    logger.info("%s OUTPUT (%d ms): %s", step, duration_ms, result)
     return result
