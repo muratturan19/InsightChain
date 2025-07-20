@@ -2,7 +2,13 @@ from typing import Dict, List
 
 from .linkedin_finder import linkedinfinder
 from .news_search import brave_news
-from .search_tools import bing_search, google_search, duckduckgo_search
+from .search_tools import (
+    bing_search,
+    google_search,
+    duckduckgo_search,
+    serpapi_search,
+    google_cse_search,
+)
 
 
 def linkedin_search(company: str) -> Dict[str, str]:
@@ -32,3 +38,13 @@ def web_search(query: str) -> Dict[str, List[str]]:
     results.extend(google_search(query))
     results.extend(duckduckgo_search(query))
     return {"results": results}
+
+
+def serpapi_web_search(query: str) -> Dict[str, List[Dict[str, str]]]:
+    """Search the web via SerpAPI."""
+    return {"results": serpapi_search(query)}
+
+
+def google_custom_search(query: str) -> Dict[str, List[Dict[str, str]]]:
+    """Search using Google Custom Search API."""
+    return {"results": google_cse_search(query)}
