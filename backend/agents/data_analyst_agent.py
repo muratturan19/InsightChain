@@ -2,6 +2,7 @@
 
 import json
 from typing import Dict, List, Optional
+import time
 
 import openai
 
@@ -66,6 +67,7 @@ def analyze_data(
 ) -> Dict[str, str]:
     """Run the Data Analyst agent and return final summary."""
     step = "LLM3-DataAnalystAgent"
+    start = time.perf_counter()
     try:
         news_data = brave_news(query)
     except Exception:
@@ -79,7 +81,8 @@ def analyze_data(
             messages=[{"role": "user", "content": prompt}],
         )
         summary = response.choices[0].message.content
-        logger.info("%s OUTPUT: %s", step, summary)
+        duration_ms = int((time.perf_counter() - start) * 1000)
+        logger.info("%s OUTPUT (%d ms): %s", step, duration_ms, summary)
         try:
             data = json.loads(summary)
         except json.JSONDecodeError:
@@ -87,7 +90,7 @@ def analyze_data(
         # Only use decision makers provided by the LinkedIn agent
         data["decision_makers"] = linkedin_data.get("contacts", [])
         summary = json.dumps(data, ensure_ascii=False)
-        return {"summary": summary, "news": news_data.get("news", [])}
+        return {"summary": summary, "news": news_data.get("news", []), "duration_ms": duration_ms}
     except Exception as exc:
         logger.exception("%s ERROR: %s", step, exc)
         raise
