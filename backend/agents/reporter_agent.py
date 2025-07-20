@@ -18,6 +18,17 @@ from ..tools import (
     google_custom_search,
 )
 
+# Map tool names to callables for easier dispatching
+TOOL_DISPATCH = {
+    "newsfinder": lambda p: newsfinder(p.get("query", "")),
+    "linkedin_search": lambda p: linkedin_search(p.get("company", "")),
+    "trend_fetcher": lambda p: trend_fetcher(p.get("topic", "")),
+    "product_catalogue": lambda p: product_catalogue(p.get("query", "")),
+    "web_search": lambda p: web_search(p.get("query", "")),
+    "serpapi_web_search": lambda p: serpapi_web_search(p.get("query", "")),
+    "google_custom_search": lambda p: google_custom_search(p.get("query", "")),
+}
+
 client = openai.OpenAI()
 
 # Basic CSS snippet for Delta Proje sales reports
@@ -74,7 +85,6 @@ def make_prompt(analysis: Dict[str, Any]) -> str:
         f"Use this CSS for styling:\n{STYLE_SNIPPET}\n"
         f"Input JSON:\n{json.dumps(analysis, ensure_ascii=False)}"
     )
-
 
 
 def generate_report(analysis_json: str, tool_mode: bool = False) -> str:
@@ -171,23 +181,8 @@ def generate_report(analysis_json: str, tool_mode: bool = False) -> str:
                         args = json.loads(call.function.arguments or "{}")
                     except json.JSONDecodeError:
                         args = {}
-                    name = call.function.name
-                    if name == "newsfinder":
-                        result = newsfinder(args.get("query", ""))
-                    elif name == "linkedin_search":
-                        result = linkedin_search(args.get("company", ""))
-                    elif name == "trend_fetcher":
-                        result = trend_fetcher(args.get("topic", ""))
-                    elif name == "product_catalogue":
-                        result = product_catalogue(args.get("query", ""))
-                    elif name == "web_search":
-                        result = web_search(args.get("query", ""))
-                    elif name == "serpapi_web_search":
-                        result = serpapi_web_search(args.get("query", ""))
-                    elif name == "google_custom_search":
-                        result = google_custom_search(args.get("query", ""))
-                    else:
-                        result = {}
+                    func = TOOL_DISPATCH.get(call.function.name)
+                    result = func(args) if func else {}
                     messages.append(
                         {
                             "role": "tool",
