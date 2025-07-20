@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import ConnectionPopup from './ConnectionPopup';
+import PipelineProgress, { Step } from './PipelineProgress';
 
 export default function MainCard() {
   const [query, setQuery] = useState('');
   const [company, setCompany] = useState('');
   const [loading, setLoading] = useState(false);
-  const [status, setStatus] = useState('');
   const [result, setResult] = useState('');
   const [showPopup, setShowPopup] = useState(false);
+  const [steps, setSteps] = useState<Step[]>([]);
+  const [showPipeline, setShowPipeline] = useState(false);
 
   const checkInternet = async () => {
     try {
@@ -23,34 +25,63 @@ export default function MainCard() {
     if (!query) return;
     setLoading(true);
     setResult('');
-    setStatus('İnternet bağlantısı kontrol ediliyor...');
+    setShowPipeline(true);
+
+    const newSteps: Step[] = [
+      { label: 'İnternet Bağlantısı Kontrol Ediliyor', status: 'pending' },
+      { label: 'Web Sitesi İnceleniyor', status: 'pending' },
+      { label: 'LinkedIn Bilgileri Alınıyor', status: 'pending' },
+      { label: 'Rapor Hazırlanıyor', status: 'pending' }
+    ];
+    setSteps(newSteps);
+
+    const update = (i: number, data: Partial<Step>) =>
+      setSteps((prev) => {
+        const copy = [...prev];
+        copy[i] = { ...copy[i], ...data };
+        return copy;
+      });
+
+    const s0 = performance.now();
+    update(0, { status: 'in-progress' });
     const ok = await checkInternet();
+    update(0, {
+      status: ok ? 'success' : 'error',
+      duration: performance.now() - s0
+    });
     if (!ok) {
       setLoading(false);
-      setStatus('');
+      setShowPipeline(false);
       setShowPopup(true);
       return;
     }
-    setStatus('Web sitesi inceleniyor...');
-    const statusTimer = setTimeout(() => {
-      setStatus('LinkedIn şirket ve kontak bilgileri analiz ediliyor...');
-    }, 1500);
+
+    const s1 = performance.now();
+    update(1, { status: 'in-progress' });
+    await new Promise((r) => setTimeout(r, 500));
+    update(1, { status: 'success', duration: performance.now() - s1 });
+
+    const s2 = performance.now();
+    update(2, { status: 'in-progress' });
+    await new Promise((r) => setTimeout(r, 500));
+    update(2, { status: 'success', duration: performance.now() - s2 });
+
+    const s3 = performance.now();
+    update(3, { status: 'in-progress' });
     try {
       const res = await fetch('/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ website: query, company: company || null })
       });
-      setStatus('Rapor hazırlanıyor...');
       const data = await res.json();
       setResult(data.report || data.analysis?.summary || '');
-      setStatus('');
-      clearTimeout(statusTimer);
+      update(3, { status: 'success', duration: performance.now() - s3 });
     } catch (err) {
-      setStatus('Hata oluştu');
-      clearTimeout(statusTimer);
+      update(3, { status: 'error', duration: performance.now() - s3 });
     } finally {
       setLoading(false);
+      setTimeout(() => setShowPipeline(false), 1000);
     }
   };
 
@@ -61,6 +92,11 @@ export default function MainCard() {
           onRetry={checkInternet}
           onClose={() => setShowPopup(false)}
         />
+      )}
+      {showPipeline && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <PipelineProgress steps={steps} />
+        </div>
       )}
       <div className="grid gap-8 md:grid-cols-2">
         <div className="space-y-4">
@@ -108,12 +144,6 @@ export default function MainCard() {
         </div>
       </div>
       <div className="p-4 bg-slate-50 dark:bg-slate-900 rounded-lg shadow-sm min-h-40">
-        {loading && (
-          <div className="flex items-center space-x-2">
-            <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
-            <p className="text-sm text-slate-700 dark:text-slate-300">{status}</p>
-          </div>
-        )}
         {!loading && result && (
           <div
             className="prose dark:prose-invert text-sm"
