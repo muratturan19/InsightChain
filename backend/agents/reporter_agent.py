@@ -53,6 +53,8 @@ p,li{font-size:17px;line-height:1.7;}
 .alert{background:#FFE6E6;border-left:6px solid #ff0000;padding:15px;}
 .actions li{font-weight:bold;margin-bottom:8px;}
 .actions li::before{content:'💡 ';}
+/* Box styling so the action and value section matches other boxes */
+.actions-box{background:#F5F6FA;padding:20px;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,0.06);}
 footer{text-align:center;font-size:14px;color:#003366;position:fixed;bottom:0;left:0;width:100%;background:#fff;padding:8px 0;box-shadow:0 -1px 3px rgba(0,0,0,0.1);}
 </style>
 """
@@ -68,7 +70,7 @@ Rapor şu bölümlerden oluşmalı:
 * Ardından şirket özeti, karar vericiler, büyüme ve satış sinyalleri, Delta Proje satış fırsatları, aksiyon ve değer önerileri, güncel haberler ile riskler sıralanmalı.
 * "Delta Proje Satış Fırsatları" kısmında hidrolik, pnömatik, proses otomasyonu ve yapay zekâ çözümlerinin müşterinin hangi süreçlerinde katma değer yaratacağı kısa senaryolarla açıklanmalı.
 * "Growth/Market Sinyalleri" bölümünde yatırım, yeni tesis veya işe alım gibi somut göstergeler varsa hikâyeleştirilmeli.
-* "Aksiyon Önerileri" ise zamanlama ve teklif yaklaşımını içeren maddelerle özetlenmeli.
+* "Aksiyon ve Değer Önerileri" bölümü, zamanlama ve teklif yaklaşımını içeren maddeleri listeler. Bu kısım `<section class='actions-box'><ul class='actions'>` yapısı kullanılarak raporun geri kalanındaki kutu formatıyla aynı stilde gösterilmeli.
 * Veri yoksa "Bilgi yok" yazılmalı.
 
 Görsel tasarım profesyonel bir iş dokümanını andırmalı. Montserrat başlık, Open Sans gövde yazısı kullan; 850px genişliğinde gölgeli ve yuvarlak köşeli konteyner tercih et. Başlıklar kalın, metin 17px ve satır aralığı 1.7 olmalı. Bölümler gri çizgiyle ayrılmalı. Riskler kırmızı kutuda gösterilmeli. Aksiyon maddeleri 💡 ikonu ile başlamalı. Raporun altında "Bu rapor Delta Proje Akıllı Satış Asistanı tarafından hazırlanmıştır." yazan bir footer bulunmalı.
