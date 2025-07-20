@@ -24,6 +24,36 @@ def company_api_search(query: str) -> List[str]:
     return [f"Company API result for {query}"]
 
 
+BRAVE_API_KEY = os.getenv("BRAVE_API_KEY")
+BRAVE_SEARCH_URL = "https://api.search.brave.com/res/v1/web/search"
+
+
+def brave_search(query: str) -> List[Dict[str, str]]:
+    """Search the web using Brave Search API."""
+    if not BRAVE_API_KEY:
+        raise ValueError("BRAVE_API_KEY not set")
+
+    params = {"q": query, "count": 3}
+    headers = {
+        "Accept": "application/json",
+        "X-Subscription-Token": BRAVE_API_KEY,
+    }
+    resp = requests.get(BRAVE_SEARCH_URL, params=params, headers=headers, timeout=10)
+    resp.raise_for_status()
+    data = resp.json()
+    items = data.get("web", {}).get("results", [])
+    results: List[Dict[str, str]] = []
+    for hit in items[:3]:
+        results.append(
+            {
+                "title": hit.get("title", ""),
+                "url": hit.get("url", ""),
+                "snippet": hit.get("description", ""),
+            }
+        )
+    return results
+
+
 SERPAPI_API_KEY = os.getenv("SERPAPI_API_KEY")
 SERPAPI_URL = "https://serpapi.com/search"
 
@@ -39,7 +69,13 @@ def serpapi_search(query: str) -> List[Dict[str, str]]:
     data = resp.json()
     results: List[Dict[str, str]] = []
     for item in data.get("organic_results", [])[:3]:
-        results.append({"title": item.get("title", ""), "url": item.get("link", "")})
+        results.append(
+            {
+                "title": item.get("title", ""),
+                "url": item.get("link", ""),
+                "snippet": item.get("snippet", ""),
+            }
+        )
     return results
 
 
@@ -59,5 +95,11 @@ def google_cse_search(query: str) -> List[Dict[str, str]]:
     data = resp.json()
     results: List[Dict[str, str]] = []
     for item in data.get("items", [])[:3]:
-        results.append({"title": item.get("title", ""), "url": item.get("link", "")})
+        results.append(
+            {
+                "title": item.get("title", ""),
+                "url": item.get("link", ""),
+                "snippet": item.get("snippet", ""),
+            }
+        )
     return results

@@ -13,6 +13,7 @@ from .search_tools import (
     google_search,
     duckduckgo_search,
     company_api_search,
+    brave_search,
     serpapi_search,
     google_cse_search,
 )
