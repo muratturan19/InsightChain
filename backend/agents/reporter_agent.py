@@ -11,56 +11,61 @@ from ..utils.logger import logger
 
 client = openai.OpenAI()
 
+# Basic CSS snippet to keep visual style consistent across reports
+STYLE_SNIPPET = """
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Open+Sans:wght@400&display=swap');
+body{font-family:'Open Sans',sans-serif;background:#F5F6FA;color:#003366;margin:0;padding:20px;}
+h1,h2,h3{font-family:'Montserrat',sans-serif;font-weight:700;}
+.card{background:#FFFFFF;border-radius:10px;box-shadow:0 2px 6px rgba(0,0,0,0.1);padding:20px;margin-bottom:20px;}
+.card h2{color:#2C85C8;font-size:24px;margin-top:0;display:flex;align-items:center;}
+.alert{background:#ffe6e6;border-left:6px solid #ff0000;padding:15px;border-radius:8px;}
+.actions li{margin-bottom:8px;}
+.actions li::before{content:'💡';margin-right:6px;}
+footer{text-align:center;margin-top:20px;color:#003366;font-size:14px;}
+</style>
+"""
+
 
 REPORT_PROMPT = """
-You are an expert sales analyst for Delta Proje, tasked with generating a client-facing report based strictly on structured data from previous analysis.
-DO NOT HALLUCINATE or fabricate any data.
-If a field is missing, clearly state "Information not available."
+You are an expert sales analyst for Delta Proje. Generate a polished HTML report based
+strictly on the provided analysis JSON. Never fabricate data: if something is missing,
+clearly note "Bilgi yok". The report must be fully in Turkish.
 
-Your report should be concise, visually appealing, and suitable for direct sharing with sales teams or clients.
-Use clear headlines, bullet points, and strong section formatting.
+Visual design requirements:
+- Use Google fonts Montserrat (bold, 24px) for headings and Open Sans (16px) for text.
+- Primary colors: koyu mavi #003366, açık mavi #2C85C8, vurgu #F8B400, açık gri #F5F6FA,
+  beyaz #FFFFFF.
+- Each section should be in a rounded "card" with subtle box-shadow and generous padding.
+- Section titles may include simple icons (emoji or FontAwesome) and the title text should
+  use the accent color.
+- The "Riskler" section must appear in a red alert-style box.
+- "Aksiyon önerileri" should be an unordered list where each item begins with a 💡 emoji.
+- Finish the document with a footer: "Bu rapor Delta Proje Akıllı Satış Asistanı tarafından hazırlanmıştır.".
+- Ensure a responsive layout that looks good on desktop and mobile.
 
-Report sections:
+Content guidelines:
+- Company Overview: brief summary, location, sector and size.
+- Key Decision Makers: names, titles and short LinkedIn summaries.
+- Growth & Sales Signals: hiring or expansion indicators.
+- Delta Proje Sales Opportunities: suggest Hydraulic, Pneumatic, Process Automation or
+  AI solutions only if supported by input; otherwise state that no clear opportunity
+  is visible.
+- Actionable Recommendations: how to approach and what value proposition.
+- Recent News: list with links if available.
+- Riskler & Açık Noktalar: data gaps or competitive risks.
 
-Company Overview:
-Brief summary (from input)
-Location, sector, company size
-
-Key Decision Makers:
-Names, titles, and short LinkedIn summaries
-
-Growth & Sales Signals:
-Any recent expansion, hiring, or other signals
-
-Delta Proje Sales Opportunities:
-Based on the company's sector and current state, which Delta Proje solutions might fit best?
-Focus on:
-Hydraulic Systems
-Pneumatic Systems
-Process Automation
-AI & Digital Transformation
-Make suggestions only if justified by the input data.
-
-Actionable Recommendations:
-Who to approach, with what value proposition
-Potential entry points or partnership opportunities
-
-Recent News:
-List with links if available
-
-Risks & Open Questions:
-Gaps in data, ambiguities, or competitive risks
-
-Use only information from the provided JSON input.
-Do not make up numbers, projects, or contacts.
-Highlight missing or unclear data directly in the report.
-Output pure HTML suitable for end users.
-"""
+Output only the final HTML document – no explanations. Incorporate the required CSS
+inside a <style> tag so the result can be shared as a single file."""
 
 
 def make_prompt(analysis: Dict[str, Any]) -> str:
     """Create Reporter prompt given analysis JSON."""
-    return f"{REPORT_PROMPT}\nInput JSON:\n{json.dumps(analysis, ensure_ascii=False)}"
+    return (
+        f"{REPORT_PROMPT}\n"
+        f"Use this CSS for styling:\n{STYLE_SNIPPET}\n"
+        f"Input JSON:\n{json.dumps(analysis, ensure_ascii=False)}"
+    )
 
 
 
