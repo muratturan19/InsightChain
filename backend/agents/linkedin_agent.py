@@ -5,6 +5,8 @@ from typing import Dict
 
 import openai
 
+from ..utils.logger import logger
+
 client = openai.OpenAI()
 
 from ..tools import linkedinfinder, linkedincontacts
@@ -36,42 +38,56 @@ def call_gpt4(prompt: str) -> Dict[str, str]:
     payload. We attempt to parse the content and provide a helpful error if it
     fails.
     """
-    response = client.chat.completions.create(
-        model="gpt-4",
-        messages=[{"role": "user", "content": prompt}],
-        temperature=0,
-    )
-    content = response.choices[0].message.content or ""
+    step = "LLM2-LinkedInAgent"
+    logger.info("%s INPUT: %s", step, prompt)
     try:
-        return json.loads(content)
-    except json.JSONDecodeError:
-        import re
+        response = client.chat.completions.create(
+            model="gpt-4",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0,
+        )
+        content = response.choices[0].message.content or ""
+        logger.info("%s OUTPUT: %s", step, content)
+        try:
+            return json.loads(content)
+        except json.JSONDecodeError:
+            import re
 
-        match = re.search(r"{.*}", content, re.DOTALL)
-        if match:
-            try:
-                return json.loads(match.group(0))
-            except json.JSONDecodeError:
-                pass
-        raise ValueError(f"Invalid JSON from GPT-4: {content}")
+            match = re.search(r"{.*}", content, re.DOTALL)
+            if match:
+                try:
+                    return json.loads(match.group(0))
+                except json.JSONDecodeError:
+                    pass
+            raise ValueError(f"Invalid JSON from GPT-4: {content}")
+    except Exception as exc:
+        logger.exception("%s ERROR: %s", step, exc)
+        raise
 
 
 def orchestrate_linkedin(company: str, contacts: bool = False) -> Dict[str, object]:
     """Main entrypoint that orchestrates LinkedIn finding (and optionally contacts)."""
-    prompt = make_prompt(company, contacts)
-    decision = call_gpt4(prompt)
-    tool_name = decision["selected_tool"]
-    params = decision.get("parameters", {})
+    step = "LinkedInAgent"
+    logger.info("%s INPUT: %s", step, company)
+    try:
+        prompt = make_prompt(company, contacts)
+        decision = call_gpt4(prompt)
+        tool_name = decision["selected_tool"]
+        params = decision.get("parameters", {})
 
-    tools_map = {"linkedinfinder": linkedinfinder}
-    if contacts:
-        tools_map["linkedincontacts"] = linkedincontacts
+        tools_map = {"linkedinfinder": linkedinfinder}
+        if contacts:
+            tools_map["linkedincontacts"] = linkedincontacts
 
-    tool = tools_map.get(tool_name)
-    if not tool:
-        raise ValueError(f"Unknown tool selected: {tool_name}")
+        tool = tools_map.get(tool_name)
+        if not tool:
+            raise ValueError(f"Unknown tool selected: {tool_name}")
 
-    result = tool(**params)
-    if contacts and result.get("linkedin_url"):
-        result.update(linkedincontacts(result["linkedin_url"]))
-    return result
+        result = tool(**params)
+        if contacts and result.get("linkedin_url"):
+            result.update(linkedincontacts(result["linkedin_url"]))
+        logger.info("%s OUTPUT: %s", step, result)
+        return result
+    except Exception as exc:
+        logger.exception("%s ERROR: %s", step, exc)
+        raise

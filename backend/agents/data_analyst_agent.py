@@ -5,6 +5,8 @@ from typing import Dict
 
 import openai
 
+from ..utils.logger import logger
+
 client = openai.OpenAI()
 
 from ..tools import brave_news
@@ -31,15 +33,22 @@ def analyze_data(
     scrape_data: Dict[str, str], linkedin_data: Dict[str, object], query: str
 ) -> Dict[str, str]:
     """Run the Data Analyst agent and return final summary."""
+    step = "LLM3-DataAnalystAgent"
     try:
         news_data = brave_news(query)
     except Exception:
         news_data = {"news": []}
 
     prompt = make_prompt(scrape_data, linkedin_data, news_data)
-    response = client.chat.completions.create(
-        model="gpt-4",
-        messages=[{"role": "user", "content": prompt}],
-    )
-    summary = response.choices[0].message.content
-    return {"summary": summary, "news": news_data.get("news", [])}
+    logger.info("%s INPUT: %s", step, prompt)
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4",
+            messages=[{"role": "user", "content": prompt}],
+        )
+        summary = response.choices[0].message.content
+        logger.info("%s OUTPUT: %s", step, summary)
+        return {"summary": summary, "news": news_data.get("news", [])}
+    except Exception as exc:
+        logger.exception("%s ERROR: %s", step, exc)
+        raise

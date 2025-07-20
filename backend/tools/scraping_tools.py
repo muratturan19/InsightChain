@@ -19,6 +19,8 @@ from scrapy import Spider
 # OpenAI for llmscraper
 import openai
 
+from ..utils.logger import logger
+
 # create a client instance using environment variables for configuration
 client = openai.OpenAI()
 
@@ -79,15 +81,22 @@ def masscrawler(target_url: str) -> Dict[str, str]:
 
 def llmscraper(target_url: str) -> Dict[str, str]:
     """Fetch page and ask OpenAI to extract key information."""
+    step = "LLM-ScrapingTools.llmscraper"
     html = staticscraper(target_url)["html"]
     prompt = (
         "You are a helpful assistant that extracts key facts from webpages.\n"
-        f"Content:\n{html[:4000]}\n"  # limit to first 4000 chars
+        f"Content:\n{html[:4000]}\n"
         "Provide a short summary."
     )
-    response = client.chat.completions.create(
-        model="gpt-4", messages=[{"role": "user", "content": prompt}]
-    )
-    summary = response.choices[0].message.content
-    return {"summary": summary, "html": html}
+    logger.info("%s INPUT: %s", step, prompt)
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4", messages=[{"role": "user", "content": prompt}]
+        )
+        summary = response.choices[0].message.content
+        logger.info("%s OUTPUT: %s", step, summary)
+        return {"summary": summary, "html": html}
+    except Exception as exc:
+        logger.exception("%s ERROR: %s", step, exc)
+        raise
 
