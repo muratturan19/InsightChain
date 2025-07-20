@@ -9,7 +9,13 @@ from ..utils.logger import logger
 
 client = openai.OpenAI()
 
-from ..tools import linkedinfinder, linkedincontacts
+from ..tools import (
+    linkedinfinder,
+    linkedincontacts,
+    hunterio_lookup,
+    clearbit_lookup,
+    apollo_api,
+)
 
 
 def make_prompt(company: str, want_contacts: bool) -> str:
@@ -26,14 +32,14 @@ def make_prompt(company: str, want_contacts: bool) -> str:
         "If any information is missing, leave the field blank. Never invent or guess.\n\n"
         "Respond in JSON in this format:\n"
         "{\n"
-        "  \"linkedin_url\": \"\",\n"
-        "  \"company_size\": \"\",\n"
-        "  \"industry\": \"\",\n"
-        "  \"location\": \"\",\n"
-        "  \"contacts\": [\n"
-        "    {\"full_name\": \"\", \"title\": \"\", \"summary\": \"\"}\n"
+        '  "linkedin_url": "",\n'
+        '  "company_size": "",\n'
+        '  "industry": "",\n'
+        '  "location": "",\n'
+        '  "contacts": [\n'
+        '    {"full_name": "", "title": "", "summary": ""}\n'
         "  ],\n"
-        "  \"sales_signals\": [\"\", \"\"]\n"
+        '  "sales_signals": ["", ""]\n'
         "}\n"
         f"\nCompany name: {company}"
     )
@@ -83,7 +89,12 @@ def orchestrate_linkedin(company: str, contacts: bool = False) -> Dict[str, obje
         tool_name = decision["selected_tool"]
         params = decision.get("parameters", {})
 
-        tools_map = {"linkedinfinder": linkedinfinder}
+        tools_map = {
+            "linkedinfinder": linkedinfinder,
+            "hunterio": hunterio_lookup,
+            "clearbit": clearbit_lookup,
+            "apollo": apollo_api,
+        }
         if contacts:
             tools_map["linkedincontacts"] = linkedincontacts
 
