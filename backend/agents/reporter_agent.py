@@ -18,6 +18,23 @@ from ..tools import (
     google_custom_search,
 )
 
+# Map tool names to callables for easier dispatching
+TOOL_DISPATCH = {
+    "newsfinder": lambda p: newsfinder(p.get("query", "")),
+    "linkedin_search": lambda p: linkedin_search(p.get("company", "")),
+    "trend_fetcher": lambda p: trend_fetcher(p.get("topic", "")),
+    "product_catalogue": lambda p: product_catalogue(p.get("query", "")),
+    "web_search": lambda p: web_search(p.get("query", "")),
+    "serpapi_web_search": lambda p: serpapi_web_search(p.get("query", "")),
+    "google_custom_search": lambda p: google_custom_search(p.get("query", "")),
+}
+
+
+def dispatch_tool_call(name: str, params: Dict[str, Any]) -> Any:
+    """Return the tool result for the given name and params."""
+    func = TOOL_DISPATCH.get(name)
+    return func(params) if func else {}
+
 client = openai.OpenAI()
 
 # Basic CSS snippet for Delta Proje sales reports
@@ -74,7 +91,6 @@ def make_prompt(analysis: Dict[str, Any]) -> str:
         f"Use this CSS for styling:\n{STYLE_SNIPPET}\n"
         f"Input JSON:\n{json.dumps(analysis, ensure_ascii=False)}"
     )
-
 
 
 def generate_report(analysis_json: str, tool_mode: bool = False) -> str:
