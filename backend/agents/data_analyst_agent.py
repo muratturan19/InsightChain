@@ -17,15 +17,42 @@ def make_prompt(
     linkedin_data: Dict[str, object],
     news_data: Dict[str, object],
 ) -> str:
-    """Construct a prompt combining all gathered information."""
+    """Construct the Data Analyst Agent prompt."""
     return (
-        "You are a data analyst for the InsightChain platform.\n"
-        "Using the following scraped website data, LinkedIn info and recent news,\n"
-        "generate a concise report about the company.\n\n"
-        f"Website Data: {json.dumps(scrape_data)[:1000]}\n\n"
-        f"LinkedIn Data: {json.dumps(linkedin_data)[:1000]}\n\n"
-        f"News: {json.dumps(news_data)[:1000]}\n\n"
-        "Return a short summary."
+        "You are a senior sales intelligence analyst for the InsightChain platform. "
+        "You will receive two JSON objects with information about a target company:\n"
+        "- Scraper Output: Main company info from the website (company name, summary, sector, products/services, sales signals).\n"
+        "- LinkedIn Output: Company LinkedIn profile data (LinkedIn URL, size, industry, key contacts with name/title, LinkedIn sales signals).\n"
+        "\n"
+        "In addition, you have access to a 'newsfinder' tool (using BraveAPI) that lets you search the web for recent news about the company. "
+        "Use this tool to gather any important, recent updates or signals relevant to sales (such as funding rounds, expansions, leadership changes, awards, or problems).\n"
+        "\n"
+        "Your job: Synthesize all this data into a concise, practical, and actionable summary for a sales team. "
+        "Focus on insights that would help a sales rep decide how, why, and to whom to reach out. "
+        "Highlight decision-makers, sales opportunities, recent developments, and anything that could impact a sales pitch.\n"
+        "\n"
+        "Output only valid JSON using this format:\n"
+        "{\n"
+        '  "company_summary": "",\n'
+        '  "sector": "",\n'
+        '  "products_services": "",\n'
+        '  "decision_makers": [\n'
+        '    {"full_name": "", "title": "", "summary": ""}\n'
+        "  ],\n"
+        '  "linkedin_url": "",\n'
+        '  "company_size": "",\n'
+        '  "location": "",\n'
+        '  "sales_signals": ["", ""],\n'
+        '  "recent_news": ["", ""],\n'
+        '  "risks": "",\n'
+        '  "actionable_insights": ["", ""]\n'
+        "}\n"
+        "\n"
+        "If any field is unknown, leave it blank or as an empty list. Never invent or hallucinate information.\n"
+        "\n"
+        f"Scraper Output (JSON): {json.dumps(scrape_data)[:1000]}\n"
+        f"LinkedIn Output (JSON): {json.dumps(linkedin_data)[:1000]}\n"
+        f"News (JSON): {json.dumps(news_data)[:1000]}"
     )
 
 

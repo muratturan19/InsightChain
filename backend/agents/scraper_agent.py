@@ -31,11 +31,11 @@ def extract_company_info(html: str) -> Dict[str, str]:
         f"HTML:\n{html[:4000]}\n\n"
         "Respond in JSON with these keys:\n"
         "{\n"
-        "  \"company_name\": \"\",\n"
-        "  \"summary\": \"\",\n"
-        "  \"sector\": \"\",\n"
-        "  \"notable_products_or_services\": \"\",\n"
-        "  \"sales_signals\": \"\"\n"
+        '  "company_name": "",\n'
+        '  "summary": "",\n'
+        '  "sector": "",\n'
+        '  "notable_products_or_services": "",\n'
+        '  "sales_signals": ""\n'
         "}"
     )
     logger.info("%s INPUT: %s", step, prompt)
@@ -80,6 +80,7 @@ def orchestrate_scraping(company_url: str) -> Dict[str, str]:
         scraping_tools.jsrender,
         scraping_tools.formbot,
         scraping_tools.masscrawler,
+        scraping_tools.llmscraper,
     ]
     html = ""
     for tool in tools:
