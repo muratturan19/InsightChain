@@ -23,7 +23,7 @@ export default function MainCard() {
       });
       setStatus('Rapor hazırlanıyor...');
       const data = await res.json();
-      setResult(data.analysis?.summary || '');
+      setResult(data.report || data.analysis?.summary || '');
       setStatus('');
       clearTimeout(statusTimer);
     } catch (err) {
@@ -89,9 +89,10 @@ export default function MainCard() {
           </div>
         )}
         {!loading && result && (
-          <pre className="whitespace-pre-wrap text-sm text-slate-800 dark:text-slate-200">
-            {result}
-          </pre>
+          <div
+            className="prose dark:prose-invert text-sm"
+            dangerouslySetInnerHTML={{ __html: result }}
+          />
         )}
       </div>
     </div>

@@ -42,7 +42,7 @@ class AnalyzeRequest(BaseModel):
 def analyze(req: AnalyzeRequest):
     """Run the full analysis pipeline for a company website."""
     result = run_pipeline(req.website, req.company)
-    return result
+    return {"report": result.get("report", "")}
 
 
 # Future endpoints for agent orchestration will live here.
