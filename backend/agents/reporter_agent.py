@@ -29,6 +29,12 @@ TOOL_DISPATCH = {
     "google_custom_search": lambda p: google_custom_search(p.get("query", "")),
 }
 
+
+def dispatch_tool_call(name: str, params: Dict[str, Any]) -> Any:
+    """Return the tool result for the given name and params."""
+    func = TOOL_DISPATCH.get(name)
+    return func(params) if func else {}
+
 client = openai.OpenAI()
 
 # Basic CSS snippet for Delta Proje sales reports
@@ -181,8 +187,7 @@ def generate_report(analysis_json: str, tool_mode: bool = False) -> str:
                         args = json.loads(call.function.arguments or "{}")
                     except json.JSONDecodeError:
                         args = {}
-                    func = TOOL_DISPATCH.get(call.function.name)
-                    result = func(args) if func else {}
+                    result = dispatch_tool_call(call.function.name, args)
                     messages.append(
                         {
                             "role": "tool",
