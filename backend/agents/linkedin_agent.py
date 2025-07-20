@@ -13,20 +13,29 @@ from ..tools import linkedinfinder, linkedincontacts
 
 
 def make_prompt(company: str, want_contacts: bool) -> str:
-    """Construct the orchestration prompt for GPT-4."""
+    """Construct the LinkedIn extraction prompt for GPT-4."""
     return (
-        "You are an orchestration agent for the InsightChain platform.\n"
-        "A company name is already provided. Use the given name to locate the most accurate LinkedIn company profile URL.\n"
-        "Tools at your disposal:\n"
-        "- linkedinfinder: search the web and return the LinkedIn company page URL.\n"
-        "- linkedincontacts: (optional) fetch key employees from that page.\n\n"
-        "Respond in this JSON format:\n"
+        "You are a sales intelligence agent for the InsightChain platform.\n"
+        "Given a company name, your job is to help sales teams prepare for outreach by extracting the most relevant LinkedIn information about that company.\n\n"
+        "Your objectives:\n"
+        "- Use the given company name to find the official LinkedIn company page (not subsidiaries or similarly-named companies).\n"
+        "- From that page, extract publicly available key employees\u2014especially decision-makers, executives, sales leads, and relevant managers. For each contact, provide full name, current title/role, and (if public) a short one-line summary from their LinkedIn profile.\n"
+        "- If possible, note the company size, location, and industry as listed on LinkedIn.\n"
+        "- If you find any recent news, growth signals, or organizational changes (leadership, funding, hiring, new markets, awards), include them as brief bullet points.\n\n"
+        "Be precise and practical\u2014focus only on what will help a sales team in prospecting.\n"
+        "If any information is missing, leave the field blank. Never invent or guess.\n\n"
+        "Respond in JSON in this format:\n"
         "{\n"
-        '  "selected_tool": "linkedinfinder",\n'
-        '  "parameters": {\n'
-        f'    "company_name": "{company}"\n'
-        "  }\n"
+        "  \"linkedin_url\": \"\",\n"
+        "  \"company_size\": \"\",\n"
+        "  \"industry\": \"\",\n"
+        "  \"location\": \"\",\n"
+        "  \"contacts\": [\n"
+        "    {\"full_name\": \"\", \"title\": \"\", \"summary\": \"\"}\n"
+        "  ],\n"
+        "  \"sales_signals\": [\"\", \"\"]\n"
         "}\n"
+        f"\nCompany name: {company}"
     )
 
 
