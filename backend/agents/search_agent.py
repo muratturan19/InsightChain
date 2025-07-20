@@ -1,22 +1,20 @@
 """Temel Search Agent.
 Bu ajan verilen anahtar kelimeler için örnek veri döner."""
 
-from typing import List
+from typing import List, Dict
 
-from ..tools import (
-    bing_search,
-    google_search,
-    duckduckgo_search,
-    company_api_search,
+from ..tools.search_tools import (
+    serpapi_search,
+    brave_search,
+    google_cse_search,
 )
 
 
-def run_search(keywords: List[str]) -> List[str]:
+def run_search(keywords: List[str]) -> List[Dict[str, str]]:
     """Aggregate results from multiple search tools."""
-    results: List[str] = []
+    results: List[Dict[str, str]] = []
     for kw in keywords:
-        results.extend(bing_search(kw))
-        results.extend(google_search(kw))
-        results.extend(duckduckgo_search(kw))
-        results.extend(company_api_search(kw))
+        results.extend(serpapi_search(kw))
+        results.extend(brave_search(kw))
+        results.extend(google_cse_search(kw))
     return results
