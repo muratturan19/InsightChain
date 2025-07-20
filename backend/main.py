@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Query
 from pydantic import BaseModel
+import socket
 
 from .agents import (
     orchestrate_scraping,
@@ -8,6 +9,27 @@ from .agents import (
 )
 
 app = FastAPI(title="InsightChain API")
+
+
+def check_port_443(host: str = "google.com") -> bool:
+    """Return True if a TCP connection to host:443 succeeds."""
+    try:
+        with socket.create_connection((host, 443), timeout=3):
+            return True
+    except OSError:
+        return False
+
+
+@app.get("/check_internet")
+def check_internet():
+    """Check outbound HTTPS connectivity."""
+    for host in ("google.com", "api.serpapi.com", "www.bing.com"):
+        if check_port_443(host):
+            return {"ok": True}
+    return {
+        "ok": False,
+        "error": "İNTERNET BAĞLANTISI KURULAMADI. Lütfen bağlantınızı kontrol edin ve 443 portuna erişimin açık olduğuna emin olun",
+    }
 
 
 @app.get("/")

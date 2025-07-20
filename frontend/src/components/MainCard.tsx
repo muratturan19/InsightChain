@@ -11,6 +11,20 @@ export default function MainCard() {
     if (!query) return;
     setLoading(true);
     setResult('');
+    setStatus('İnternet bağlantısı kontrol ediliyor...');
+    try {
+      const ping = await fetch('/check_internet');
+      const pingRes = await ping.json();
+      if (!pingRes.ok) {
+        setStatus(pingRes.error);
+        setLoading(false);
+        return;
+      }
+    } catch (err) {
+      setStatus('İNTERNET BAĞLANTISI KURULAMADI. Lütfen bağlantınızı kontrol edin ve 443 portuna erişimin açık olduğuna emin olun');
+      setLoading(false);
+      return;
+    }
     setStatus('Web sitesi inceleniyor...');
     const statusTimer = setTimeout(() => {
       setStatus('LinkedIn şirket ve kontak bilgileri analiz ediliyor...');
