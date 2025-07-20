@@ -2,6 +2,8 @@ import logging
 from logging.handlers import RotatingFileHandler
 import os
 
+logging.basicConfig(encoding="utf-8")
+
 LOG_FILE = os.getenv("PIPELINE_LOGFILE", "pipeline.log")
 
 logger = logging.getLogger("pipeline")

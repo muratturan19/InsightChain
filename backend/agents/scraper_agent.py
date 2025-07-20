@@ -6,6 +6,7 @@ from typing import Dict
 import openai
 
 from ..utils.logger import logger
+from ..utils import normalize_url
 from ..tools import scraping_tools
 
 client = openai.OpenAI()
@@ -73,6 +74,7 @@ def extract_company_info(html: str) -> Dict[str, str]:
 def orchestrate_scraping(company_url: str) -> Dict[str, str]:
     """Attempt multiple scraping tools sequentially and return extracted info."""
     step = "ScraperAgent"
+    company_url = normalize_url(company_url)
     logger.info("%s INPUT: %s", step, company_url)
 
     tools = [

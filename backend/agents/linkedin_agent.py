@@ -9,13 +9,7 @@ from ..utils.logger import logger
 
 client = openai.OpenAI()
 
-from ..tools import (
-    linkedinfinder,
-    linkedincontacts,
-    hunterio_lookup,
-    clearbit_lookup,
-    apollo_api,
-)
+
 
 
 def make_prompt(company: str, want_contacts: bool) -> str:
@@ -80,33 +74,14 @@ def call_gpt4(prompt: str) -> Dict[str, str]:
 
 
 def orchestrate_linkedin(company: str, contacts: bool = False) -> Dict[str, object]:
-    """Main entrypoint that orchestrates LinkedIn finding (and optionally contacts)."""
+    """Main entrypoint that returns LinkedIn data extracted by GPT-4."""
     step = "LinkedInAgent"
     logger.info("%s INPUT: %s", step, company)
     try:
         prompt = make_prompt(company, contacts)
-        decision = call_gpt4(prompt)
-        tool_name = decision["selected_tool"]
-        params = decision.get("parameters", {})
-
-        tools_map = {
-            "linkedinfinder": linkedinfinder,
-            "hunterio": hunterio_lookup,
-            "clearbit": clearbit_lookup,
-            "apollo": apollo_api,
-        }
-        if contacts:
-            tools_map["linkedincontacts"] = linkedincontacts
-
-        tool = tools_map.get(tool_name)
-        if not tool:
-            raise ValueError(f"Unknown tool selected: {tool_name}")
-
-        result = tool(**params)
-        if contacts and result.get("linkedin_url"):
-            result.update(linkedincontacts(result["linkedin_url"]))
-        logger.info("%s OUTPUT: %s", step, result)
-        return result
+        linkedin_data = call_gpt4(prompt)
+        logger.info("%s OUTPUT: %s", step, linkedin_data)
+        return linkedin_data
     except Exception as exc:
         logger.exception("%s ERROR: %s", step, exc)
         raise
