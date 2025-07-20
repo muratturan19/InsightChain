@@ -24,7 +24,7 @@ npm install
 npm run dev
 ```
 
-Gerekli API anahtarlarını `backend/.env.example` dosyasını kopyalayıp `.env` adında oluşturmayı unutmayın.
+Gerekli API anahtarları (Exa, OpenAI ve Brave) için `backend/.env.example` dosyasını kopyalayıp `.env` adıyla doldurmayı unutmayın.
 
 LinkedIn şirket sayfasını bulmak için backend'deki `/find_linkedin` endpoint'ini
 kullanabilirsiniz.
