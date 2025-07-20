@@ -25,7 +25,7 @@ Ajanlar, platformun çekirdek işlevlerini modüler şekilde üstlenir. Her ajan
 
 ## 6. Reporter Agent
 - **Görev:** Analiz JSON'unu modern kart tabanlı HTML rapora dönüştürmek
-- **Kullandığı Tool'lar:** newsfinder, linkedin_search, trend_fetcher, product_catalogue, web_search
+- **Kullandığı Tool'lar:** newsfinder, linkedin_search, trend_fetcher, product_catalogue, web_search, serpapi_web_search, google_custom_search
 
 ---
 

@@ -14,6 +14,8 @@ from ..tools import (
     trend_fetcher,
     product_catalogue,
     web_search,
+    serpapi_web_search,
+    google_custom_search,
 )
 
 client = openai.OpenAI()
@@ -39,6 +41,11 @@ REPORT_PROMPT = """
 You are an advanced sales analyst (LLM4) working for Delta Proje.
 Create a modern, card-based HTML report using only the provided JSON analysis.
 If any field is missing, explicitly note 'Bilgi yok' and never invent facts.
+As Reporter Agent, you may use serpapi, BraveAPI and Google Custom Search tools
+to gather up-to-date company news, milestones or decision maker changes. Chain
+them logically when necessary and always cite the source with a short
+reliability note. Do not hallucinate. If no information is found, explicitly say
+so.
 
 Visual design must follow Delta Proje guidelines: Montserrat headings, Open Sans text,
 primary colors #003366 and #2C85C8 with accent #F8B400. Each section should be a rounded
@@ -55,7 +62,9 @@ Content to include:
 - Güncel Haberler (varsa linkli)
 - Riskler ve Açık Noktalar
 
-Return only a complete HTML document with embedded CSS; no extra commentary."""
+If tools cannot retrieve new information, write 'Son 6 ayda şirketle ilgili kayda
+değer gelişme bulunamadı'. Return only a complete HTML document with embedded
+CSS; no extra commentary."""
 
 
 def make_prompt(analysis: Dict[str, Any]) -> str:
@@ -127,6 +136,22 @@ def generate_report(analysis_json: str, tool_mode: bool = False) -> str:
                 "parameters": {"type": "object", "properties": {"query": {"type": "string"}}, "required": ["query"]},
             },
         },
+        {
+            "type": "function",
+            "function": {
+                "name": "serpapi_web_search",
+                "description": "Search Google via SerpAPI",
+                "parameters": {"type": "object", "properties": {"query": {"type": "string"}}, "required": ["query"]},
+            },
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "google_custom_search",
+                "description": "Google Custom Search results",
+                "parameters": {"type": "object", "properties": {"query": {"type": "string"}}, "required": ["query"]},
+            },
+        },
     ]
 
     try:
@@ -158,6 +183,10 @@ def generate_report(analysis_json: str, tool_mode: bool = False) -> str:
                     result = product_catalogue(args.get("query", ""))
                 elif name == "web_search":
                     result = web_search(args.get("query", ""))
+                elif name == "serpapi_web_search":
+                    result = serpapi_web_search(args.get("query", ""))
+                elif name == "google_custom_search":
+                    result = google_custom_search(args.get("query", ""))
                 else:
                     result = {}
                 messages.append({"role": "tool", "tool_call_id": call.id, "content": json.dumps(result, ensure_ascii=False)})

@@ -13,6 +13,8 @@ from .search_tools import (
     google_search,
     duckduckgo_search,
     company_api_search,
+    serpapi_search,
+    google_cse_search,
 )
 from .enrichment_tools import (
     hunterio_lookup,
@@ -25,4 +27,6 @@ from .insight_tools import (
     trend_fetcher,
     product_catalogue,
     web_search,
+    serpapi_web_search,
+    google_custom_search,
 )

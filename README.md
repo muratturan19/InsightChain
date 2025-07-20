@@ -24,8 +24,9 @@ npm install
 npm run dev
 ```
 
-Gerekli API anahtarları (Exa, OpenAI ve Brave) için `backend/.env.example` dosyasını kopyalayıp `.env` adıyla doldurmayı unutmayın.
+Gerekli API anahtarları (Exa, OpenAI, Brave, SerpAPI ve Google Custom Search) için `backend/.env.example` dosyasını kopyalayıp `.env` adıyla doldurmayı unutmayın.
 
 LinkedIn şirket sayfasını bulmak için backend'deki `/find_linkedin` endpoint'ini
 kullanabilirsiniz.
 Tam entegre analiz için `/analyze` endpoint'ine şirket web sitesini POST edin.
+Reporter Agent'ın tool destekli çalışmasını görmek için `backend/examples/reporter_usage.py` dosyasını çalıştırabilirsiniz.
