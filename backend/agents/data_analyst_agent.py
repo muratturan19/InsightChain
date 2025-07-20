@@ -1,7 +1,7 @@
 """Data Analyst Agent that creates a final company report."""
 
 import json
-from typing import Dict
+from typing import Dict, List, Optional
 
 import openai
 
@@ -16,6 +16,7 @@ def make_prompt(
     scrape_data: Dict[str, str],
     linkedin_data: Dict[str, object],
     news_data: Dict[str, object],
+    extra_search: Optional[List[Dict[str, str]]] = None,
 ) -> str:
     """Construct the Data Analyst Agent prompt."""
     return (
@@ -52,12 +53,16 @@ def make_prompt(
         "\n"
         f"Scraper Output (JSON): {json.dumps(scrape_data)[:1000]}\n"
         f"LinkedIn Output (JSON): {json.dumps(linkedin_data)[:1000]}\n"
-        f"News (JSON): {json.dumps(news_data)[:1000]}"
+        f"News (JSON): {json.dumps(news_data)[:1000]}\n"
+        f"Extra Search Results (JSON): {json.dumps(extra_search or [])[:1000]}"
     )
 
 
 def analyze_data(
-    scrape_data: Dict[str, str], linkedin_data: Dict[str, object], query: str
+    scrape_data: Dict[str, str],
+    linkedin_data: Dict[str, object],
+    query: str,
+    extra_search: Optional[List[Dict[str, str]]] = None,
 ) -> Dict[str, str]:
     """Run the Data Analyst agent and return final summary."""
     step = "LLM3-DataAnalystAgent"
@@ -66,7 +71,7 @@ def analyze_data(
     except Exception:
         news_data = {"news": []}
 
-    prompt = make_prompt(scrape_data, linkedin_data, news_data)
+    prompt = make_prompt(scrape_data, linkedin_data, news_data, extra_search)
     logger.info("%s INPUT: %s", step, prompt)
     try:
         response = client.chat.completions.create(
