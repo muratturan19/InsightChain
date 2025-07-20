@@ -3,7 +3,7 @@ uvicorn
 langchain
 requests
 python-dotenv
-openai
+openai>=1.0.0
 beautifulsoup4
 playwright
 selenium
