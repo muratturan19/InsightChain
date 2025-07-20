@@ -17,11 +17,15 @@ def run_pipeline(
     company_name: Optional[str] = None,
     depth: int = 1,
 ) -> Dict[str, object]:
-    """Run scraping, LinkedIn enrichment and final analysis."""
+    """Run scraping, LinkedIn enrichment and final analysis.
+
+    ``depth`` is forwarded to :func:`orchestrate_scraping`. Passing ``0``
+    disables internal crawling and only the main page is scraped.
+    """
     step = "Pipeline"
     logger.info("%s START: %s %s", step, company_url, company_name)
     start = time.perf_counter()
-    depth = max(1, depth)
+    depth = max(0, depth)
     try:
         scrape_result = orchestrate_scraping(company_url, depth)
         if not company_name:
