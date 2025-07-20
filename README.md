@@ -28,3 +28,4 @@ Gerekli API anahtarlarını `backend/.env.example` dosyasını kopyalayıp `.env
 
 LinkedIn şirket sayfasını bulmak için backend'deki `/find_linkedin` endpoint'ini
 kullanabilirsiniz.
+Tam entegre analiz için `/analyze` endpoint'ine şirket web sitesini POST edin.
