@@ -35,21 +35,40 @@ scrapy_module.Spider = object
 sys.modules.setdefault("scrapy", scrapy_module)
 sys.modules.setdefault("scrapy.crawler", crawler_module)
 
-from backend.agents.linkedin_agent import _search_all
+from backend.agents.orchestrator_agent import run_pipeline
 
 
-class SearchAllResultsTest(unittest.TestCase):
-    @patch("backend.agents.linkedin_agent.google_cse_search")
-    @patch("backend.agents.linkedin_agent.brave_search")
-    @patch("backend.agents.linkedin_agent.serpapi_search")
-    def test_returns_at_least_ten(self, mock_serpapi, mock_brave, mock_google):
-        mock_serpapi.return_value = [{"url": "https://linkedin.com/1"}] * 4
-        mock_brave.return_value = [{"url": "https://linkedin.com/2"}] * 4
-        mock_google.return_value = [{"url": "https://linkedin.com/3"}] * 4
+class PipelineDepthTest(unittest.TestCase):
+    @patch("backend.agents.scraper_agent.extract_company_info", return_value={})
+    @patch("backend.agents.scraper_agent.crawl_site")
+    @patch("backend.agents.scraper_agent.scraping_tools.llmscraper", return_value={"html": ""})
+    @patch("backend.agents.scraper_agent.scraping_tools.masscrawler", return_value={"html": ""})
+    @patch("backend.agents.scraper_agent.scraping_tools.formbot", return_value={"html": ""})
+    @patch("backend.agents.scraper_agent.scraping_tools.jsrender", return_value={"html": ""})
+    @patch("backend.agents.scraper_agent.scraping_tools.staticscraper")
+    @patch("backend.agents.orchestrator_agent.generate_report", return_value={"html": "", "duration_ms": 0})
+    @patch("backend.agents.orchestrator_agent.analyze_data", return_value={"summary": "{}", "duration_ms": 0})
+    @patch("backend.agents.orchestrator_agent.orchestrate_linkedin", return_value={"duration_ms": 0})
+    @patch("backend.agents.orchestrator_agent.targeted_search", return_value=[])
+    def test_depth_zero_skips_internal_crawl(
+        self,
+        mock_search,
+        mock_linkedin,
+        mock_analyze,
+        mock_report,
+        mock_static,
+        mock_js,
+        mock_formbot,
+        mock_mass,
+        mock_llm,
+        mock_crawl,
+        mock_extract,
+    ):
+        mock_static.return_value = {"html": "<html>main</html>"}
 
-        results = _search_all("acme")
-        total = sum(len(v) for v in results.values())
-        self.assertGreaterEqual(total, 10)
+        run_pipeline("http://example.com", depth=0)
+
+        mock_crawl.assert_not_called()
 
 
 if __name__ == "__main__":
