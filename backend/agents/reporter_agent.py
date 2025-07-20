@@ -163,33 +163,43 @@ def generate_report(analysis_json: str, tool_mode: bool = False) -> str:
                 tools=tools if tool_mode else None,
             )
             msg = response.choices[0].message
-            if msg.content:
-                report = msg.content
-                logger.info("%s OUTPUT: %s", step, report)
-                return report
-            for call in msg.tool_calls or []:
-                try:
-                    args = json.loads(call.function.arguments or "{}")
-                except json.JSONDecodeError:
-                    args = {}
-                name = call.function.name
-                if name == "newsfinder":
-                    result = newsfinder(args.get("query", ""))
-                elif name == "linkedin_search":
-                    result = linkedin_search(args.get("company", ""))
-                elif name == "trend_fetcher":
-                    result = trend_fetcher(args.get("topic", ""))
-                elif name == "product_catalogue":
-                    result = product_catalogue(args.get("query", ""))
-                elif name == "web_search":
-                    result = web_search(args.get("query", ""))
-                elif name == "serpapi_web_search":
-                    result = serpapi_web_search(args.get("query", ""))
-                elif name == "google_custom_search":
-                    result = google_custom_search(args.get("query", ""))
-                else:
-                    result = {}
-                messages.append({"role": "tool", "tool_call_id": call.id, "content": json.dumps(result, ensure_ascii=False)})
+            messages.append(msg.model_dump(exclude_none=True))
+
+            if msg.tool_calls:
+                for call in msg.tool_calls:
+                    try:
+                        args = json.loads(call.function.arguments or "{}")
+                    except json.JSONDecodeError:
+                        args = {}
+                    name = call.function.name
+                    if name == "newsfinder":
+                        result = newsfinder(args.get("query", ""))
+                    elif name == "linkedin_search":
+                        result = linkedin_search(args.get("company", ""))
+                    elif name == "trend_fetcher":
+                        result = trend_fetcher(args.get("topic", ""))
+                    elif name == "product_catalogue":
+                        result = product_catalogue(args.get("query", ""))
+                    elif name == "web_search":
+                        result = web_search(args.get("query", ""))
+                    elif name == "serpapi_web_search":
+                        result = serpapi_web_search(args.get("query", ""))
+                    elif name == "google_custom_search":
+                        result = google_custom_search(args.get("query", ""))
+                    else:
+                        result = {}
+                    messages.append(
+                        {
+                            "role": "tool",
+                            "tool_call_id": call.id,
+                            "content": json.dumps(result, ensure_ascii=False),
+                        }
+                    )
+                continue
+
+            report = msg.content or ""
+            logger.info("%s OUTPUT: %s", step, report)
+            return report
     except Exception as exc:
         logger.exception("%s ERROR: %s", step, exc)
         raise
