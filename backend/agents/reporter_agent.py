@@ -63,6 +63,7 @@ footer{text-align:center;font-size:14px;color:#003366;position:fixed;bottom:0;le
 
 REPORT_PROMPT = """
 Delta Proje adına çalışan deneyimli bir satış analistisin. Verilen JSON verilerini kullanarak modern bir danışmanlık raporu üret.
+Tüm yanıtları yalnızca Türkçe olarak ver.
 Her başlıkta sektör odaklı, uygulanabilir ve özgün açıklamalar yap. Veri eksikse 'Bilgi yok' de; kesinlikle uydurma.
 Karar vericiler bölümünde yalnızca Input JSON'daki `decision_makers` listesini kullan; liste boşsa "Bilgi yok" yaz ve yeni isimler uydurma.
 Gerekli durumlarda serpapi, BraveAPI veya Google Custom Search ile güncel haber, yeni atama ve büyüme sinyallerini topla ve kaynağını belirt.
