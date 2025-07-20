@@ -12,13 +12,31 @@ client = openai.OpenAI()
 
 
 def extract_company_info(html: str) -> Dict[str, str]:
-    """Use GPT-4 to extract company name and a short summary from HTML."""
+    """Use GPT-4 to extract company info for sales preparation.
+
+    Returns a dict with keys 'company_name', 'summary', 'sector',
+    'notable_products_or_services' and 'sales_signals'.
+    """
     step = "LLM1-ExtractCompany"
     prompt = (
-        "You are a helpful assistant. Given the HTML of a company's website, "
-        "extract the official company name and provide a one sentence summary.\n\n"
+        "You are a sales intelligence assistant for the InsightChain platform. "
+        "Given the HTML of a company's website, your job is to extract key information "
+        "that will help sales teams quickly understand the company and prepare for outreach.\n\n"
+        "Your main goals:\n"
+        "- Extract the official company name (brand, legal or most commonly used form)\n"
+        "- Write a concise one-sentence summary of what the company does, focusing on its main business and any unique value proposition.\n"
+        "- If possible, identify the primary industry/sector and notable products, services, or technologies.\n"
+        "- Note any signals that might help a sales team (e.g. recent news, growth, awards, leadership changes, market focus, new locations, partnerships, etc.)\n\n"
+        "Be brief, practical and directly useful for sales preparation. If any information is missing, just leave the field blank—do not hallucinate or make up facts.\n\n"
         f"HTML:\n{html[:4000]}\n\n"
-        "Respond in JSON with keys 'company_name' and 'summary'."
+        "Respond in JSON with these keys:\n"
+        "{\n"
+        "  \"company_name\": \"\",\n"
+        "  \"summary\": \"\",\n"
+        "  \"sector\": \"\",\n"
+        "  \"notable_products_or_services\": \"\",\n"
+        "  \"sales_signals\": \"\"\n"
+        "}"
     )
     logger.info("%s INPUT: %s", step, prompt)
     try:
@@ -43,7 +61,13 @@ def extract_company_info(html: str) -> Dict[str, str]:
             raise ValueError(f"Invalid JSON from GPT-4: {content}")
     except Exception as exc:
         logger.exception("%s ERROR: %s", step, exc)
-        return {"company_name": "", "summary": ""}
+        return {
+            "company_name": "",
+            "summary": "",
+            "sector": "",
+            "notable_products_or_services": "",
+            "sales_signals": "",
+        }
 
 
 def orchestrate_scraping(company_url: str) -> Dict[str, str]:
