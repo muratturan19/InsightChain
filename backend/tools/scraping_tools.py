@@ -21,8 +21,16 @@ import openai
 
 from ..utils.logger import logger
 
-# create a client instance using environment variables for configuration
-client = openai.OpenAI()
+# create an OpenAI client lazily to avoid requiring API key at import time
+client = None
+
+
+def get_client() -> openai.OpenAI:
+    """Return a cached OpenAI client instance."""
+    global client
+    if client is None:
+        client = openai.OpenAI()
+    return client
 
 
 def staticscraper(target_url: str) -> Dict[str, str]:
@@ -90,7 +98,7 @@ def llmscraper(target_url: str) -> Dict[str, str]:
     )
     logger.info("%s INPUT: %s", step, prompt)
     try:
-        response = client.chat.completions.create(
+        response = get_client().chat.completions.create(
             model="gpt-4", messages=[{"role": "user", "content": prompt}]
         )
         summary = response.choices[0].message.content
