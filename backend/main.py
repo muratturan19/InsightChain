@@ -1,6 +1,11 @@
 from fastapi import FastAPI, Query
+from pydantic import BaseModel
 
-from .agents import orchestrate_scraping, orchestrate_linkedin
+from .agents import (
+    orchestrate_scraping,
+    orchestrate_linkedin,
+    run_pipeline,
+)
 
 app = FastAPI(title="InsightChain API")
 
@@ -25,6 +30,17 @@ def find_linkedin(
 ):
     """Endpoint that finds the LinkedIn company page (and optionally contacts)."""
     result = orchestrate_linkedin(company, contacts)
+    return result
+
+
+class AnalyzeRequest(BaseModel):
+    website: str
+
+
+@app.post("/analyze")
+def analyze(req: AnalyzeRequest):
+    """Run the full analysis pipeline for a company website."""
+    result = run_pipeline(req.website)
     return result
 
 

@@ -7,3 +7,4 @@ from .scraping_tools import (
     llmscraper,
 )
 from .linkedin_finder import linkedinfinder, linkedincontacts
+from .news_search import brave_news
