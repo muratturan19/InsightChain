@@ -33,7 +33,7 @@ def brave_search(query: str) -> List[Dict[str, str]]:
     if not BRAVE_API_KEY:
         raise ValueError("BRAVE_API_KEY not set")
 
-    params = {"q": query, "count": 3}
+    params = {"q": query, "count": 10}
     headers = {
         "Accept": "application/json",
         "X-Subscription-Token": BRAVE_API_KEY,
@@ -43,7 +43,7 @@ def brave_search(query: str) -> List[Dict[str, str]]:
     data = resp.json()
     items = data.get("web", {}).get("results", [])
     results: List[Dict[str, str]] = []
-    for hit in items[:3]:
+    for hit in items[:10]:
         results.append(
             {
                 "title": hit.get("title", ""),
@@ -63,12 +63,12 @@ def serpapi_search(query: str) -> List[Dict[str, str]]:
     if not SERPAPI_API_KEY:
         raise ValueError("SERPAPI_API_KEY not set")
 
-    params = {"engine": "google", "q": query, "api_key": SERPAPI_API_KEY, "num": 3}
+    params = {"engine": "google", "q": query, "api_key": SERPAPI_API_KEY, "num": 10}
     resp = requests.get(SERPAPI_URL, params=params, timeout=10)
     resp.raise_for_status()
     data = resp.json()
     results: List[Dict[str, str]] = []
-    for item in data.get("organic_results", [])[:3]:
+    for item in data.get("organic_results", [])[:10]:
         results.append(
             {
                 "title": item.get("title", ""),
@@ -89,12 +89,12 @@ def google_cse_search(query: str) -> List[Dict[str, str]]:
     if not GOOGLE_API_KEY or not GOOGLE_CSE_ID:
         raise ValueError("GOOGLE_API_KEY or GOOGLE_CSE_ID not set")
 
-    params = {"key": GOOGLE_API_KEY, "cx": GOOGLE_CSE_ID, "q": query}
+    params = {"key": GOOGLE_API_KEY, "cx": GOOGLE_CSE_ID, "q": query, "num": 10}
     resp = requests.get(GOOGLE_CSE_URL, params=params, timeout=10)
     resp.raise_for_status()
     data = resp.json()
     results: List[Dict[str, str]] = []
-    for item in data.get("items", [])[:3]:
+    for item in data.get("items", [])[:10]:
         results.append(
             {
                 "title": item.get("title", ""),

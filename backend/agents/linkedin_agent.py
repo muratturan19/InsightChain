@@ -26,26 +26,17 @@ def _parse_contact(result: Dict[str, str]) -> Dict[str, str]:
 
 
 def _search_all(query: str) -> Dict[str, List[Dict[str, str]]]:
-    """Run SerpAPI, Brave and Google searches sequentially."""
+    """Run SerpAPI, Brave and Google searches."""
     results = {"serpapi": [], "brave": [], "google": []}
-    try:
-        results["serpapi"] = serpapi_search(query)
-    except Exception as exc:
-        logger.exception("serpapi_search failed: %s", exc)
-
-    if not any("linkedin.com" in r.get("url", "") for r in results["serpapi"]):
+    for name, func in [
+        ("serpapi", serpapi_search),
+        ("brave", brave_search),
+        ("google", google_cse_search),
+    ]:
         try:
-            results["brave"] = brave_search(query)
+            results[name] = func(query)
         except Exception as exc:
-            logger.exception("brave_search failed: %s", exc)
-
-    if not any(
-        "linkedin.com" in r.get("url", "") for lst in results.values() for r in lst
-    ):
-        try:
-            results["google"] = google_cse_search(query)
-        except Exception as exc:
-            logger.exception("google_custom_search failed: %s", exc)
+            logger.exception("%s search failed: %s", name, exc)
 
     return results
 
