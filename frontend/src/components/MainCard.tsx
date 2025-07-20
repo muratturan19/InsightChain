@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 
 export default function MainCard() {
   const [query, setQuery] = useState('');
+  const [company, setCompany] = useState('');
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState('');
   const [result, setResult] = useState('');
@@ -18,7 +19,7 @@ export default function MainCard() {
       const res = await fetch('/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ website: query })
+        body: JSON.stringify({ website: query, company: company || null })
       });
       setStatus('Rapor hazırlanıyor...');
       const data = await res.json();
@@ -47,6 +48,17 @@ export default function MainCard() {
             onChange={(e) => setQuery(e.target.value)}
             className="w-full px-4 py-2 rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500"
             placeholder="example.com or search term"
+          />
+          <label htmlFor="company" className="block text-slate-800 dark:text-slate-200 font-semibold">
+            Şirket İsmi (opsiyonel)
+          </label>
+          <input
+            id="company"
+            type="text"
+            value={company}
+            onChange={(e) => setCompany(e.target.value)}
+            className="w-full px-4 py-2 rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500"
+            placeholder="Acme Corp"
           />
           <button
             onClick={handleSearch}
