@@ -5,6 +5,7 @@ from typing import Dict, Optional
 from .scraper_agent import orchestrate_scraping
 from .linkedin_agent import orchestrate_linkedin
 from .data_analyst_agent import analyze_data
+from .reporter_agent import generate_report
 from ..utils.logger import logger
 
 
@@ -20,10 +21,12 @@ def run_pipeline(
             company_name = scrape_result.get("company_name", company_url)
         linkedin_result = orchestrate_linkedin(company_name, contacts=True)
         analysis_result = analyze_data(scrape_result, linkedin_result, company_name)
+        report_html = generate_report(analysis_result.get("summary", "{}"))
         result = {
             "scrape": scrape_result,
             "linkedin": linkedin_result,
             "analysis": analysis_result,
+            "report": report_html,
         }
         logger.info("%s OUTPUT: %s", step, result)
         return result
