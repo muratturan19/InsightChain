@@ -11,6 +11,18 @@ export default function MainCard() {
   const [steps, setSteps] = useState<Step[]>([]);
   const [showPipeline, setShowPipeline] = useState(false);
 
+  const handleSavePdf = () => {
+    const reportEl = document.getElementById('report-area');
+    if (!reportEl) return;
+    const newWin = window.open('', '_blank');
+    if (!newWin) return;
+    newWin.document.write(
+      `<html><head><title>Report</title></head><body>${reportEl.innerHTML}</body></html>`
+    );
+    newWin.document.close();
+    newWin.print();
+  };
+
   const checkInternet = async () => {
     try {
       const ping = await fetch('/check_internet');
@@ -143,7 +155,7 @@ export default function MainCard() {
           <p className="text-sm text-slate-400 dark:text-slate-500">Future filters here</p>
         </div>
       </div>
-      <div className="p-4 bg-slate-50 dark:bg-slate-900 rounded-lg shadow-sm min-h-40">
+      <div id="report-area" className="p-4 bg-slate-50 dark:bg-slate-900 rounded-lg shadow-sm min-h-40">
         {!loading && result && (
           <div
             className="prose dark:prose-invert text-sm"
@@ -151,6 +163,16 @@ export default function MainCard() {
           />
         )}
       </div>
+      {!loading && result && (
+        <div className="flex justify-end">
+          <button
+            onClick={handleSavePdf}
+            className="mt-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded"
+          >
+            PDF olarak Kaydet
+          </button>
+        </div>
+      )}
     </div>
   );
 }
