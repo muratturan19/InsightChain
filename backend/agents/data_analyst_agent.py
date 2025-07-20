@@ -75,6 +75,13 @@ def analyze_data(
         )
         summary = response.choices[0].message.content
         logger.info("%s OUTPUT: %s", step, summary)
+        try:
+            data = json.loads(summary)
+        except json.JSONDecodeError:
+            data = {}
+        # Only use decision makers provided by the LinkedIn agent
+        data["decision_makers"] = linkedin_data.get("contacts", [])
+        summary = json.dumps(data, ensure_ascii=False)
         return {"summary": summary, "news": news_data.get("news", [])}
     except Exception as exc:
         logger.exception("%s ERROR: %s", step, exc)
