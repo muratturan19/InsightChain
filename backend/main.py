@@ -58,12 +58,13 @@ def find_linkedin(
 class AnalyzeRequest(BaseModel):
     website: str
     company: str | None = None
+    depth: int = 1
 
 
 @app.post("/analyze")
 def analyze(req: AnalyzeRequest):
     """Run the full analysis pipeline for a company website."""
-    result = run_pipeline(req.website, req.company)
+    result = run_pipeline(req.website, req.company, req.depth)
     return result
 
 
