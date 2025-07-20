@@ -163,6 +163,8 @@ def generate_report(analysis_json: str, tool_mode: bool = False) -> str:
                 tools=tools if tool_mode else None,
             )
             msg = response.choices[0].message
+            # always append assistant message so tool replies have context
+            messages.append(msg.model_dump())
             if msg.content:
                 report = msg.content
                 logger.info("%s OUTPUT: %s", step, report)
