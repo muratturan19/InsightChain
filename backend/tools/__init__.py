@@ -19,3 +19,10 @@ from .enrichment_tools import (
     clearbit_lookup,
     apollo_api,
 )
+from .insight_tools import (
+    linkedin_search,
+    newsfinder,
+    trend_fetcher,
+    product_catalogue,
+    web_search,
+)
