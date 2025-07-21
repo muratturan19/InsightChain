@@ -79,27 +79,51 @@ def serpapi_search(query: str) -> List[Dict[str, str]]:
     return results
 
 
-GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+GOOGLE_API_KEYS = [k.strip() for k in os.getenv("GOOGLE_API_KEYS", "").split(",") if k.strip()]
+if not GOOGLE_API_KEYS:
+    single = os.getenv("GOOGLE_API_KEY")
+    if single:
+        GOOGLE_API_KEYS = [single]
+
 GOOGLE_CSE_ID = os.getenv("GOOGLE_CSE_ID")
 GOOGLE_CSE_URL = "https://www.googleapis.com/customsearch/v1"
 
 
 def google_cse_search(query: str) -> List[Dict[str, str]]:
-    """Search using Google Custom Search API."""
-    if not GOOGLE_API_KEY or not GOOGLE_CSE_ID:
+    """Search using Google Custom Search API.
+
+    If multiple API keys are provided via ``GOOGLE_API_KEYS`` (comma separated),
+    they are tried sequentially when quota errors occur.
+    """
+    if not GOOGLE_API_KEYS or not GOOGLE_CSE_ID:
         raise ValueError("GOOGLE_API_KEY or GOOGLE_CSE_ID not set")
 
-    params = {"key": GOOGLE_API_KEY, "cx": GOOGLE_CSE_ID, "q": query, "num": 10}
-    resp = requests.get(GOOGLE_CSE_URL, params=params, timeout=10)
-    resp.raise_for_status()
-    data = resp.json()
-    results: List[Dict[str, str]] = []
-    for item in data.get("items", [])[:10]:
-        results.append(
-            {
-                "title": item.get("title", ""),
-                "url": item.get("link", ""),
-                "snippet": item.get("snippet", ""),
-            }
-        )
-    return results
+    last_error = ""
+    for key in GOOGLE_API_KEYS:
+        params = {"key": key, "cx": GOOGLE_CSE_ID, "q": query, "num": 10}
+        resp = requests.get(GOOGLE_CSE_URL, params=params, timeout=10)
+        if resp.status_code == 429:
+            try:
+                last_error = resp.json().get("error", {}).get("message", "")
+            except Exception:
+                last_error = resp.text
+            continue
+        if resp.status_code >= 400:
+            try:
+                message = resp.json().get("error", {}).get("message", resp.text)
+            except Exception:
+                message = resp.text
+            raise requests.HTTPError(message, response=resp)
+        data = resp.json()
+        results: List[Dict[str, str]] = []
+        for item in data.get("items", [])[:10]:
+            results.append(
+                {
+                    "title": item.get("title", ""),
+                    "url": item.get("link", ""),
+                    "snippet": item.get("snippet", ""),
+                }
+            )
+        return results
+
+    raise requests.HTTPError(last_error or "Google API rate limit exceeded", response=resp)
