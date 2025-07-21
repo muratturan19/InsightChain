@@ -75,10 +75,16 @@ export default function ConnectionPopup({ onRetry, onClose }: Props) {
         {success && (
           <div className="space-y-4">
             <p>✅ Bağlantı başarılı. Pencereyi kapatıp işlemlerinize devam edebilirsiniz.</p>
-            <div className="flex justify-end">
-              <button onClick={onClose} className="px-3 py-1 bg-blue-900 text-white rounded">
-                Kapat
-              </button>
+            <div className="flex justify-between items-center">
+              <div />
+              <div className="flex space-x-2">
+                <button onClick={onClose} className="px-3 py-1 bg-blue-900 text-white rounded">
+                  Kapat
+                </button>
+                <button onClick={handleRetry} className="px-3 py-1 bg-blue-900 text-white rounded">
+                  Tekrar Dene
+                </button>
+              </div>
             </div>
           </div>
         )}

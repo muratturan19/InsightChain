@@ -1,6 +1,8 @@
-from fastapi import FastAPI, Query
+from fastapi import FastAPI, Query, HTTPException, Request
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 import socket
+import requests
 
 from .agents import (
     orchestrate_scraping,
@@ -9,6 +11,21 @@ from .agents import (
 )
 
 app = FastAPI(title="InsightChain API")
+
+
+@app.exception_handler(Exception)
+async def handle_errors(request: Request, exc: Exception):
+    """Return JSON errors for any uncaught exception."""
+    if isinstance(exc, HTTPException):
+        return JSONResponse(status_code=exc.status_code, content={"error": exc.detail})
+    if isinstance(exc, requests.HTTPError):
+        status = exc.response.status_code if exc.response else 500
+        try:
+            detail = exc.response.json().get("error", {}).get("message", exc.response.text)
+        except Exception:
+            detail = exc.response.text if exc.response else str(exc)
+        return JSONResponse(status_code=status, content={"error": detail})
+    return JSONResponse(status_code=500, content={"error": str(exc)})
 
 
 def check_port_443(host: str = "google.com") -> bool:

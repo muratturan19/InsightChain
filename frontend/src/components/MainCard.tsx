@@ -10,6 +10,7 @@ export default function MainCard() {
   const [showPopup, setShowPopup] = useState(false);
   const [steps, setSteps] = useState<Step[]>([]);
   const [showPipeline, setShowPipeline] = useState(false);
+  const [error, setError] = useState('');
 
   const handleSavePdf = () => {
     const reportEl = document.getElementById('report-area');
@@ -38,6 +39,8 @@ export default function MainCard() {
     setLoading(true);
     setResult('');
     setShowPipeline(true);
+    setError('');
+    let hasError = false;
 
     const newSteps: Step[] = [
       { label: 'İnternet Bağlantısı Kontrol Ediliyor', status: 'pending' },
@@ -72,25 +75,36 @@ export default function MainCard() {
     update(1, { status: 'in-progress' });
     try {
       const res = await fetch('/scrape?url=' + encodeURIComponent(query));
-      if (!res.ok) throw new Error('scrape failed');
-      await res.json();
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'scrape failed');
       update(1, { status: 'success', duration: performance.now() - s1 });
-    } catch (err) {
-      update(1, { status: 'error', duration: performance.now() - s1 });
+    } catch (err: any) {
+      update(1, {
+        status: 'error',
+        duration: performance.now() - s1,
+        message: err.message
+      });
+      hasError = true;
+      setError(err.message);
     }
 
     const s2 = performance.now();
     update(2, { status: 'in-progress' });
     try {
       const res = await fetch(
-        '/find_linkedin?company=' +
-          encodeURIComponent(company || query)
+        '/find_linkedin?company=' + encodeURIComponent(company || query)
       );
-      if (!res.ok) throw new Error('linkedin failed');
-      await res.json();
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'linkedin failed');
       update(2, { status: 'success', duration: performance.now() - s2 });
-    } catch (err) {
-      update(2, { status: 'error', duration: performance.now() - s2 });
+    } catch (err: any) {
+      update(2, {
+        status: 'error',
+        duration: performance.now() - s2,
+        message: err.message
+      });
+      hasError = true;
+      setError(err.message);
     }
 
     const s3 = performance.now();
@@ -102,13 +116,22 @@ export default function MainCard() {
         body: JSON.stringify({ website: query, company: company || null })
       });
       const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'analyze failed');
       setResult(data.report || data.analysis?.summary || '');
       update(3, { status: 'success', duration: performance.now() - s3 });
-    } catch (err) {
-      update(3, { status: 'error', duration: performance.now() - s3 });
+    } catch (err: any) {
+      update(3, {
+        status: 'error',
+        duration: performance.now() - s3,
+        message: err.message
+      });
+      hasError = true;
+      setError(err.message);
     } finally {
       setLoading(false);
-      setTimeout(() => setShowPipeline(false), 1000);
+      if (!hasError) {
+        setTimeout(() => setShowPipeline(false), 1000);
+      }
     }
   };
 
@@ -122,7 +145,7 @@ export default function MainCard() {
       )}
       {showPipeline && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <PipelineProgress steps={steps} />
+          <PipelineProgress steps={steps} error={error} onRetry={handleSearch} />
         </div>
       )}
       <div className="grid gap-8 md:grid-cols-2">
