@@ -18,7 +18,14 @@ export default function ConnectionPopup({ onRetry, onClose }: Props) {
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-lg max-w-md text-slate-900 dark:text-white space-y-4">
+      <div className="relative bg-white dark:bg-slate-800 p-6 rounded-lg shadow-lg max-w-md text-slate-900 dark:text-white space-y-4">
+        <button
+          aria-label="Kapat"
+          onClick={onClose}
+          className="absolute top-2 right-2 text-slate-600 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
+        >
+          ✕
+        </button>
         {!success && (
           <>
             <p>
@@ -54,9 +61,14 @@ export default function ConnectionPopup({ onRetry, onClose }: Props) {
               <button onClick={() => setShowHelp((v) => !v)} className="text-blue-700 underline text-sm">
                 Yardım
               </button>
-              <button onClick={handleRetry} className="px-3 py-1 bg-blue-900 text-white rounded">
-                Tekrar Dene
-              </button>
+              <div className="flex space-x-2">
+                <button onClick={onClose} className="px-3 py-1 bg-slate-200 text-slate-800 rounded dark:bg-slate-700 dark:text-white">
+                  Kapat
+                </button>
+                <button onClick={handleRetry} className="px-3 py-1 bg-blue-900 text-white rounded">
+                  Tekrar Dene
+                </button>
+              </div>
             </div>
           </>
         )}
