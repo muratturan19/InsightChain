@@ -70,13 +70,28 @@ export default function MainCard() {
 
     const s1 = performance.now();
     update(1, { status: 'in-progress' });
-    await new Promise((r) => setTimeout(r, 500));
-    update(1, { status: 'success', duration: performance.now() - s1 });
+    try {
+      const res = await fetch('/scrape?url=' + encodeURIComponent(query));
+      if (!res.ok) throw new Error('scrape failed');
+      await res.json();
+      update(1, { status: 'success', duration: performance.now() - s1 });
+    } catch (err) {
+      update(1, { status: 'error', duration: performance.now() - s1 });
+    }
 
     const s2 = performance.now();
     update(2, { status: 'in-progress' });
-    await new Promise((r) => setTimeout(r, 500));
-    update(2, { status: 'success', duration: performance.now() - s2 });
+    try {
+      const res = await fetch(
+        '/find_linkedin?company=' +
+          encodeURIComponent(company || query)
+      );
+      if (!res.ok) throw new Error('linkedin failed');
+      await res.json();
+      update(2, { status: 'success', duration: performance.now() - s2 });
+    } catch (err) {
+      update(2, { status: 'error', duration: performance.now() - s2 });
+    }
 
     const s3 = performance.now();
     update(3, { status: 'in-progress' });
