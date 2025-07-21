@@ -5,6 +5,7 @@ Bu dizin FastAPI tabanlı REST servislerini içerir. Her bir ajan ve workflow mo
 ## Çalıştırma
 Komutları depo kök dizininden çalıştırın:
 ```bash
+cd backend
 pip install -r requirements.txt
 cd ..
 uvicorn backend.main:app --reload
