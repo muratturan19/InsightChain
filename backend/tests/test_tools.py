@@ -88,21 +88,17 @@ class SearchAgentTest(unittest.TestCase):
     @patch("backend.agents.search_agent.google_cse_search")
     @patch("backend.agents.search_agent.brave_search")
     @patch("backend.agents.search_agent.serpapi_search")
-    def test_run_search_aggregates_results(self, mock_serpapi, mock_brave, mock_google):
-        mock_serpapi.return_value = [{"title": "serp"}]
-        mock_brave.return_value = [{"title": "brave"}]
+    def test_run_search_dedup_and_short_circuit(self, mock_serpapi, mock_brave, mock_google):
         mock_google.return_value = [{"title": "google"}]
+        mock_serpapi.return_value = []
+        mock_brave.return_value = []
 
-        results = run_search(["openai"])
+        results = run_search(["openai", "openai"])
 
-        self.assertEqual(
-            results,
-            [
-                {"title": "serp"},
-                {"title": "brave"},
-                {"title": "google"},
-            ],
-        )
+        self.assertEqual(results, [{"title": "google"}])
+        mock_google.assert_called_once_with("openai")
+        mock_serpapi.assert_not_called()
+        mock_brave.assert_not_called()
 
 
 if __name__ == "__main__":

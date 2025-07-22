@@ -190,23 +190,30 @@ def generate_report(analysis_json: str, tool_mode: bool = False) -> str:
                 except json.JSONDecodeError:
                     args = {}
                 name = call.function.name
-                if name == "newsfinder":
-                    result = newsfinder(args.get("query", ""))
-                elif name == "linkedin_search":
-                    result = linkedin_search(args.get("company", ""))
-                elif name == "trend_fetcher":
-                    result = trend_fetcher(args.get("topic", ""))
-                elif name == "product_catalogue":
-                    result = product_catalogue(args.get("query", ""))
-                elif name == "web_search":
-                    result = web_search(args.get("query", ""))
-                elif name == "serpapi_web_search":
-                    result = serpapi_web_search(args.get("query", ""))
-                elif name == "google_custom_search":
-                    result = google_custom_search(args.get("query", ""))
-                else:
+                logger.info(
+                    "ReporterAgent CALL tool=%s args=%s", name, args
+                )
+                try:
+                    result = dispatch_tool_call(name, args)
+                except Exception as exc:
+                    logger.exception(
+                        "ReporterAgent ERROR tool=%s args=%s: %s", name, args, exc
+                    )
                     result = {}
-                messages.append({"role": "tool", "tool_call_id": call.id, "content": json.dumps(result, ensure_ascii=False)})
+                else:
+                    logger.info(
+                        "ReporterAgent RESULT tool=%s query=%s count=%d",
+                        name,
+                        args,
+                        len(result) if hasattr(result, "__len__") else 1,
+                    )
+                messages.append(
+                    {
+                        "role": "tool",
+                        "tool_call_id": call.id,
+                        "content": json.dumps(result, ensure_ascii=False),
+                    }
+                )
     except Exception as exc:
         logger.exception("%s ERROR: %s", step, exc)
         raise
