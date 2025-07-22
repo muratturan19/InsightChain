@@ -1,6 +1,7 @@
 from typing import List, Dict
 
 from .search_agent import run_search
+from ..utils.logger import logger
 
 # Mapping from missing field names to search query fragments
 QUERY_MAP = {
@@ -17,10 +18,26 @@ QUERY_MAP = {
 
 
 def targeted_search(company: str, topics: List[str]) -> List[Dict[str, str]]:
-    """Run enhanced search queries for given topics about the company."""
-    queries: List[str] = []
+    """Run targeted searches for each topic using minimal API calls."""
+    results: List[Dict[str, str]] = []
+    seen: set[str] = set()
     for topic in topics:
         fragments = QUERY_MAP.get(topic, [topic])
+        found = False
         for frag in fragments:
-            queries.append(f"{company} {frag}")
-    return run_search(queries)
+            query = f"{company} {frag}"
+            if query in seen:
+                logger.info("EnhancedSearch skip duplicate query=%s", query)
+                continue
+            seen.add(query)
+            logger.info(
+                "EnhancedSearch CALL field=%s query=%s", topic, query
+            )
+            res = run_search([query])
+            if res:
+                results.extend(res)
+                found = True
+                break
+        if not found:
+            logger.info("EnhancedSearch no result for topic=%s", topic)
+    return results
